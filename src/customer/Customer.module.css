@@ -1,0 +1,72 @@
+a {
+  text-decoration: none;
+  color: black;
+}
+
+.container {
+  height: 100%;
+  width: 100%;
+  display: grid;
+  grid-template-rows: 50px 1fr 75px;
+}
+
+.header,
+.navigator {
+  background-color: #232323;
+  color: white;
+  padding: 10px;
+}
+
+.navigator {
+  box-shadow: 0px -5px 20px rgba(0, 0, 0, 0.25);
+  display: flex;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  height: 75px;
+}
+
+.navigator a {
+  width: 100%;
+  color: white;
+}
+
+.navBT {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.navBT svg {
+  color: #999;
+}
+
+.content {
+  height: 100%;
+  display: flex;
+  padding: 10px 0 10px 0;
+  flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.homeContainer {
+  height: 100%;
+  padding: 10px 0px 10px 0px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.popularFood {
+  width: 100%;
+}
+
+.seeMore {
+  padding: 10px;
+  border: 1px solid #232323;
+  border-radius: 10px;
+}

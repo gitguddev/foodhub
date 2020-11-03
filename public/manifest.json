@@ -1,25 +1,31 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "FoodHub",
+  "name": "FoodHub",
+  "description": "ให้การสั่งอาหารเป็นเรื่องง่าย 🍗",
   "icons": [
     {
-      "src": "favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
+      "src": "icon32.png",
+      "type": "image/png",
+      "sizes": "32x32"
     },
     {
-      "src": "logo192.png",
+      "src": "icon64.png",
+      "type": "image/png",
+      "sizes": "64x64"
+    },
+    {
+      "src": "icon192.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "logo512.png",
+      "src": "icon512.png",
       "type": "image/png",
       "sizes": "512x512"
     }
   ],
-  "start_url": ".",
+  "start_url": "/manager",
   "display": "standalone",
-  "theme_color": "#000000",
+  "theme_color": "#232323",
   "background_color": "#ffffff"
 }

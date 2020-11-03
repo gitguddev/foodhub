@@ -1,0 +1,91 @@
+.navbar {
+  height: 50px;
+  background-color: #232323;
+  color: white;
+  display: flex;
+  align-items: center;
+}
+
+.navbar > * {
+  margin: 10px;
+}
+
+.navmenu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 90vw;
+  height: 100vh;
+  background-color: #232323;
+  color: white;
+  box-shadow: 0px 0px 5px 1px black;
+  display: flex;
+  flex-direction: column;
+}
+
+.navmenu > div {
+  padding: 15px;
+}
+
+.navmenu > div:hover {
+  background-color: #212121;
+}
+
+.slideIn {
+  animation: slideIn 0.5s forwards;
+}
+
+.slideOut {
+  animation: slideOut 0.5s forwards;
+}
+
+@keyframes slideIn {
+  from {
+    left: -100%;
+  }
+  to {
+    left: 0%;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    left: 0%;
+  }
+  to {
+    left: -100%;
+  }
+}
+
+.navmenuClose {
+  text-align: center;
+  background-color: #303030;
+  padding: 10px !important;
+}
+
+.navmenu svg {
+  color: #666;
+}
+
+.navmenuSelected {
+  background-color: #202020;
+}
+
+.FormHeader {
+  text-align: center;
+  padding: 30px 0px 20px 0px;
+}
+
+.UserSection {
+  display: flex;
+  align-items: center;
+}
+
+.UserSection img {
+  border-radius: 50%;
+  height: 50px;
+  width: 50px;
+  margin-right: 10px;
+  background-color: white;
+  object-fit: cover;
+}
