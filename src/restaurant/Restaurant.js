@@ -4,7 +4,7 @@ import {
   faShoppingCart,
   faScroll,
 } from "@fortawesome/free-solid-svg-icons";
-import CustomerStyle from "./Customer.module.css";
+import RestaurantStyle from "./Restaurant.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Switch, Route, Link, useParams } from "react-router-dom";
 
@@ -12,20 +12,19 @@ const Home = lazy(() => import("./Home"));
 const Cart = lazy(() => import("./Cart"));
 const Catalog = lazy(() => import("./Catalog"));
 
-function Customer() {
+function Restaurant() {
   const { restaurant_id } = useParams();
-  console.log(restaurant_id);
 
   return (
-    <div class={CustomerStyle.container}>
-      <div className={CustomerStyle.header}>
+    <div class={RestaurantStyle.container}>
+      <div className={RestaurantStyle.header}>
         <Switch>
           <Route path="/restaurant/cart">ตระกร้า</Route>
           <Route path="/restaurant/catalog">รายการ</Route>
           <Route path="/restaurant">หน้าแรก</Route>
         </Switch>
       </div>
-      <div className={CustomerStyle.content}>
+      <div className={RestaurantStyle.content}>
         <Suspense fallback={<div>กำลังโหลด</div>}>
           <Switch>
             <Route path="/restaurant/cart" component={Cart} />
@@ -34,7 +33,7 @@ function Customer() {
           </Switch>
         </Suspense>
       </div>
-      <div className={CustomerStyle.navigator}>
+      <div className={RestaurantStyle.navigator}>
         <NavBT icon={faScroll} title="รายการ" url="/restaurant/catalog" />
         <NavBT icon={faHome} title="หน้าแรก" url="/restaurant/" />
         <NavBT icon={faShoppingCart} title="ตระกร้า" url="/restaurant/cart" />
@@ -46,7 +45,7 @@ function Customer() {
 function NavBT({ icon, title, url }) {
   return (
     <Link to={url}>
-      <div className={CustomerStyle.navBT}>
+      <div className={RestaurantStyle.navBT}>
         <FontAwesomeIcon icon={icon} />
         {title}
       </div>
@@ -54,4 +53,4 @@ function NavBT({ icon, title, url }) {
   );
 }
 
-export default Customer;
+export default Restaurant;

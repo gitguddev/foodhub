@@ -3,7 +3,7 @@ import "./App.css";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 
 const Manager = lazy(() => import("./manager/Manager"));
-const Customer = lazy(() => import("./customer/Customer"));
+const Restaurant = lazy(() => import("./restaurant/Restaurant"));
 
 function App() {
   return (
@@ -12,7 +12,10 @@ function App() {
         <Suspense fallback={"กำลังโหลด"}>
           <Switch>
             <Route path="/manager" component={Manager} />
-            <Route path="/restaurant/:restaurant_id" component={Customer} />
+            <Route path="/restaurant/:restaurant_id" component={Restaurant} />
+            <Route path="/getting-started">
+              <div>Getting Started</div>
+            </Route>
             <Route path="/">
               <div>Landing Page</div>
             </Route>
