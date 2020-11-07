@@ -1,9 +1,8 @@
-import React, { Suspense, lazy } from "react";
+import React, { Suspense } from "react";
 import "./App.css";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 
-const Manager = lazy(() => import("./manager/Manager"));
-const Restaurant = lazy(() => import("./restaurant/Restaurant"));
+import { Restaurant, Manager } from "./route/Route";
 
 function App() {
   return (

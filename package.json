@@ -11,6 +11,7 @@
     "@testing-library/user-event": "^7.2.1",
     "firebase": "^8.0.0",
     "react": "^16.14.0",
+    "react-async": "^10.0.1",
     "react-dom": "^16.14.0",
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.3"
@@ -25,7 +26,11 @@
     "extends": "react-app"
   },
   "browserslist": {
-    "production": [">0.2%", "not dead", "not op_mini all"],
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
     "development": [
       "last 1 chrome version",
       "last 1 firefox version",
