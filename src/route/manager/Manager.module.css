@@ -113,11 +113,19 @@ a {
   color: red;
 }
 
-.form input {
+.form input,
+.form textarea {
   padding: 8px;
   border-radius: 3px;
   border: 1px solid #232323;
   margin-bottom: 10px;
+  resize: none;
+}
+
+.form input[type="submit"] {
+  background-color: blue;
+  color: white;
+  border: none;
 }
 
 @keyframes slideIn {

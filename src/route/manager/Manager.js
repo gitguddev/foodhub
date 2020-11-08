@@ -18,8 +18,7 @@ import { AuthUI, Auth, AuthUIConfig } from "../../utils/firebase";
 import Modal from "../../utils/modal";
 
 //Restaurant Select and Create
-import RestaurantCreate from "./RestaurantCreate";
-import RestaurantSelector from "./RestaurantSelector";
+import { RestaurantCreate, RestaurantSelect } from "./ManagerRoute";
 
 function ManagerControlPanel() {
   const [modalData, setModalData] = useState();
@@ -48,12 +47,12 @@ function ListRoute() {
       title={
         <Switch>
           <Route path={`${match.path}/create`}>สร้างร้านอาหาร</Route>
-          <Route path={`${match.path}`}>เลือกร้านอาหาร</Route>
+          <Route path={match.path}>เลือกร้านอาหาร</Route>
         </Switch>
       }
       rightTitle={
         <Switch>
-          <Route exact path={`${match.path}`}>
+          <Route exact path={match.path}>
             <Link to={`${match.url}/create`}>
               <FontAwesomeIcon icon={faPlus} />
             </Link>
@@ -63,12 +62,10 @@ function ListRoute() {
       content={
         <Switch>
           <Route path={`${match.path}/create`} component={RestaurantCreate} />
-          <Route path={match.path} component={RestaurantSelector} />
+          <Route path={match.path} component={RestaurantSelect} />
         </Switch>
       }
-      panel={
-        <NavButton icon={faStore} to={`${match.url}`} title="เลือกร้านอาหาร" />
-      }
+      panel={<NavButton icon={faStore} to={match.url} title="เลือกร้านอาหาร" />}
     />
   );
 }
@@ -97,12 +94,12 @@ function RestaurantRoute() {
             path={`${match.path}/queue`}
             component={() => "คิวการสั่งอาหาร"}
           />
-          <Route path={`${match.path}`} component={() => "หน้าแรก"} />
+          <Route path={match.path} component={() => "หน้าแรก"} />
         </Switch>
       }
       panel={
         <>
-          <NavButton icon={faHome} to={`${match.url}`} exact title="หน้าแรก" />
+          <NavButton icon={faHome} to={match.url} exact title="หน้าแรก" />
           <NavButton
             icon={faDatabase}
             to={`${match.url}/database`}

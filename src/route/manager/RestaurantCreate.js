@@ -54,12 +54,14 @@ function RestaurantCreate() {
             required={true}
           />
           คำอธิบายร้านค้า
-          <input
+          <textarea
             type="text"
             placeholder="คำอธิบายร้านค้า"
             value={description}
             onChange={handleDescriptionChange}
             required={true}
+            rows={4}
+            maxLength={150}
           />
           <span className={ManagerStyle.error}>{error}</span>
           <input type="submit" value="สร้างร้านอาหาร" />

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { Suspense, useState } from "react";
 import ManagerStyle from "./Manager.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -51,7 +51,9 @@ function ManagerShell({ rightTitle, title, content, panel }) {
         </div>
         {rightTitle}
       </div>
-      <div className={ManagerStyle.content}>{content}</div>
+      <div className={ManagerStyle.content}>
+        <Suspense fallback="กำลังโหลด">{content}</Suspense>
+      </div>
     </>
   );
 }
