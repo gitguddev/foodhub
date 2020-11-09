@@ -85,6 +85,9 @@ a {
 .content {
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto;
+  height: calc(100vh - 50px);
 }
 
 .restaurantBox {
@@ -106,11 +109,19 @@ a {
 .form {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
 }
 
 .form .error {
   color: red;
+}
+
+.form .success {
+  color: green;
+}
+
+.form .status {
+  padding: 5px;
+  text-align: center;
 }
 
 .form input,
@@ -126,6 +137,53 @@ a {
   background-color: blue;
   color: white;
   border: none;
+  font-weight: bold;
+}
+
+.database {
+  display: flex;
+  flex-direction: column;
+}
+
+.database > a {
+  flex: 1;
+  border: 1px solid #232323;
+  padding: 40px;
+  margin-bottom: 10px;
+  border-radius: 3px;
+}
+
+.database .title > svg {
+  margin-right: 10px;
+}
+
+.database > a:hover {
+  background-color: #232323;
+  cursor: pointer;
+  color: white;
+  transition: all 0.3s;
+}
+
+@media only screen and (min-width: 800px) {
+  .navmenu {
+    position: static;
+    width: 300px;
+    float: left;
+    display: flex !important;
+  }
+  .navmenuClose {
+    display: none;
+  }
+  .navbar svg {
+    display: none;
+  }
+  .navbar {
+    background-color: #202020;
+  }
+  .container {
+    width: calc(100% - 300px);
+    float: right;
+  }
 }
 
 @keyframes slideIn {

@@ -1,11 +1,9 @@
 import React from "react";
-import { useFetch } from "react-async";
-import { Link, useRouteMatch } from "react-router-dom";
+import { useAsync } from "react-async";
+import { Link, useParams, useRouteMatch } from "react-router-dom";
 import ManagerStyle from "./Manager.module.css";
 import { Auth } from "../../utils/firebase";
-
-//const API = "http://192.168.1.32/~littleboycoding/foodhub_api";
-const API = "http://localhost/~littleboycoding/foodhub_api";
+import apiFetcher from "../../utils/apiFetcher";
 
 function RestaurantBox({ id, img, title, info }) {
   const match = useRouteMatch();
@@ -25,12 +23,11 @@ function RestaurantBox({ id, img, title, info }) {
 }
 
 function RestaurantSelector() {
-  const { data, error } = useFetch(
-    `${API}/restaurant/list.php?user_uid=${Auth.currentUser.uid}`,
-    {
-      headers: { accept: "application/json" },
-    }
-  );
+  const { restaurant_id } = useParams();
+  const { data, error } = useAsync({
+    promiseFn: apiFetcher,
+    url: `/manager/restaurant/list.php?id=${restaurant_id}&user_uid=${Auth.currentUser.uid}`,
+  });
 
   if (error) return error.message;
   if (data && data.message === "success") {

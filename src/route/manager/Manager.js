@@ -18,7 +18,7 @@ import { AuthUI, Auth, AuthUIConfig } from "../../utils/firebase";
 import Modal from "../../utils/modal";
 
 //Restaurant Select and Create
-import { RestaurantCreate, RestaurantSelect } from "./ManagerRoute";
+import { RestaurantCreate, RestaurantSelect, Database } from "./ManagerRoute";
 
 function ManagerControlPanel() {
   const [modalData, setModalData] = useState();
@@ -65,7 +65,21 @@ function ListRoute() {
           <Route path={match.path} component={RestaurantSelect} />
         </Switch>
       }
-      panel={<NavButton icon={faStore} to={match.url} title="เลือกร้านอาหาร" />}
+      panel={
+        <>
+          <NavButton
+            exact
+            icon={faStore}
+            to={match.url}
+            title="เลือกร้านอาหาร"
+          />
+          <NavButton
+            icon={faPlus}
+            to={`${match.url}/create`}
+            title="สร้างร้านอาหาร"
+          />
+        </>
+      }
     />
   );
 }
@@ -85,10 +99,7 @@ function RestaurantRoute() {
       }
       content={
         <Switch>
-          <Route
-            path={`${match.path}/database`}
-            component={() => "จัดการข้อมูล"}
-          />
+          <Route path={`${match.path}/database`} component={Database} />
           <Route path={`${match.path}/report`} component={() => "รายงาน"} />
           <Route
             path={`${match.path}/queue`}

@@ -36,7 +36,9 @@ function UserSection() {
 }
 
 function ManagerShell({ rightTitle, title, content, panel }) {
-  const [show, setShow] = useState(null);
+  const [show, setShow] = useState(
+    document.documentElement.clientWidth < 800 ? null : true
+  );
 
   function togglePanel() {
     setShow(true);
@@ -45,14 +47,16 @@ function ManagerShell({ rightTitle, title, content, panel }) {
   return (
     <>
       {show != null && <Panel setShow={setShow} show={show} menu={panel} />}
-      <div className={ManagerStyle.navbar}>
-        <div>
-          <FontAwesomeIcon icon={faBars} onClick={togglePanel} /> {title}
+      <div className={ManagerStyle.container}>
+        <div className={ManagerStyle.navbar}>
+          <div>
+            <FontAwesomeIcon icon={faBars} onClick={togglePanel} /> {title}
+          </div>
+          {rightTitle}
         </div>
-        {rightTitle}
-      </div>
-      <div className={ManagerStyle.content}>
-        <Suspense fallback="กำลังโหลด">{content}</Suspense>
+        <div className={ManagerStyle.content}>
+          <Suspense fallback="กำลังโหลด">{content}</Suspense>
+        </div>
       </div>
     </>
   );

@@ -1,11 +1,8 @@
 import React, { useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Auth } from "../../utils/firebase";
+import apiFetcher from "../../utils/apiFetcher";
 import ManagerStyle from "./Manager.module.css";
-import { faStore } from "@fortawesome/free-solid-svg-icons";
 import { useHistory } from "react-router-dom";
-
-const API = "http://192.168.1.32/~littleboycoding/foodhub_api";
 
 function RestaurantCreate() {
   const [restaurantName, restaurantNameUpdate] = useState("");
@@ -24,24 +21,21 @@ function RestaurantCreate() {
   async function handleCreation(event) {
     event.preventDefault();
 
-    const json = await fetch(
-      `${API}/restaurant/insert.php?name=${restaurantName}&user_uid=${Auth.currentUser.uid}&info=${description}`
+    const json = await apiFetcher(
+      `/restaurant/insert.php?name=${restaurantName}&user_uid=${Auth.currentUser.uid}&info=${description}`
     );
 
-    //if (json) {
-    //restaurantNameUpdate("");
-    //descriptionUpdate("");
-    //} else {
-    //errorSet("มีปัญหาในการสร้างร้านอาหาร");
-    //}
-
-    history.push("/manager/list");
+    if (json.message === "success") {
+      history.push("/manager/list");
+    } else {
+      errorSet(<center>พบปัญหาในการสร้างร้านค้า</center>);
+    }
   }
 
   return (
     <div style={{ padding: 10 }}>
       <big>
-        <FontAwesomeIcon icon={faStore} /> สร้างร้านอาหาร
+        <b>สร้างร้านอาหาร</b>
       </big>
       <small>
         <form className={ManagerStyle.form} onSubmit={handleCreation}>
