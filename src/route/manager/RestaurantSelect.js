@@ -1,17 +1,15 @@
 import React from "react";
 import { useAsync } from "react-async";
-import { Link, useParams, useRouteMatch } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import ManagerStyle from "./Manager.module.css";
 import { Auth } from "../../utils/firebase";
 import apiFetcher from "../../utils/apiFetcher";
 
 function RestaurantBox({ id, img, title, info }) {
-  const match = useRouteMatch();
-
   return (
     <Link to={`/manager/restaurant/${id}`}>
       <div className={ManagerStyle.restaurantBox}>
-        <img src={img} />
+        <img alt="restaurant thumbnail" src={img} />
         <div>
           <big>{title}</big>
           <br />
@@ -37,7 +35,7 @@ function RestaurantSelector() {
           data.result.map((map) => (
             <RestaurantBox
               key={map.id}
-              img="https://bk.asia-city.com/sites/default/files/styles/og_fb/public/chains.jpg?itok=gso4x7w1"
+              img={map.img}
               title={map.name}
               id={map.id}
               info={map.info}
@@ -47,7 +45,7 @@ function RestaurantSelector() {
           <div
             style={{
               textAlign: "center",
-              fontSize: "5vw",
+              fontSize: "calc(9px + 2vw)",
               color: "#666",
               padding: 10,
             }}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Auth } from "../../utils/firebase";
 import apiFetcher from "../../utils/apiFetcher";
 import ManagerStyle from "./Manager.module.css";
@@ -9,6 +9,7 @@ function RestaurantCreate() {
   const [description, descriptionUpdate] = useState("");
   const [error, errorSet] = useState("");
   const history = useHistory();
+  const imageRef = useRef();
 
   function handleNameChange({ target }) {
     restaurantNameUpdate(target.value);
@@ -21,9 +22,13 @@ function RestaurantCreate() {
   async function handleCreation(event) {
     event.preventDefault();
 
-    const json = await apiFetcher(
-      `/restaurant/insert.php?name=${restaurantName}&user_uid=${Auth.currentUser.uid}&info=${description}`
-    );
+    const formData = new FormData();
+    formData.append("image", imageRef.current.files[0]);
+
+    const json = await apiFetcher({
+      url: `/manager/restaurant/insert.php?name=${restaurantName}&user_uid=${Auth.currentUser.uid}&info=${description}`,
+      option: { method: "POST", body: formData },
+    });
 
     if (json.message === "success") {
       history.push("/manager/list");
@@ -33,7 +38,7 @@ function RestaurantCreate() {
   }
 
   return (
-    <div style={{ padding: 10 }}>
+    <div>
       <big>
         <b>สร้างร้านอาหาร</b>
       </big>
@@ -56,6 +61,13 @@ function RestaurantCreate() {
             required={true}
             rows={4}
             maxLength={150}
+          />
+          <input
+            ref={imageRef}
+            type="file"
+            required
+            accept="image/*"
+            name="image"
           />
           <span className={ManagerStyle.error}>{error}</span>
           <input type="submit" value="สร้างร้านอาหาร" />

@@ -24,6 +24,7 @@ a {
   box-shadow: 0px 0px 5px 1px black;
   display: flex;
   flex-direction: column;
+  z-index: 3;
 }
 
 .navmenuButton {
@@ -88,6 +89,8 @@ a {
   overflow-x: hidden;
   overflow-y: auto;
   height: calc(100vh - 50px);
+  animation: fadeIn 0.5s;
+  padding: 20px;
 }
 
 .restaurantBox {
@@ -96,8 +99,16 @@ a {
   display: grid;
   grid-template-columns: 30% 1fr;
   grid-gap: 10px;
-  padding: 10px;
-  border-bottom: 1px solid black;
+  padding: 20px;
+  border: 1px solid #232323;
+  margin-bottom: 10px;
+  border-radius: 3px;
+}
+
+.restaurantBox:hover {
+  background-color: #232323;
+  transition: all 0.3s;
+  color: white;
 }
 
 .restaurantBox > img {
@@ -133,11 +144,26 @@ a {
   resize: none;
 }
 
-.form input[type="submit"] {
+.form input[type="submit"], .form input[type="button"] {
   background-color: blue;
   color: white;
   border: none;
   font-weight: bold;
+  transition: all 0.3s;
+}
+
+.form input[type="submit"]:hover ,.form input[type="button"]:hover {
+  background-color: darkblue;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.form .danger {
+	background-color: red !important;
+}
+
+.form .danger:hover {
+	background-color: darkred !important;
 }
 
 .database {
@@ -148,7 +174,7 @@ a {
 .database > a {
   flex: 1;
   border: 1px solid #232323;
-  padding: 40px;
+  padding: 20px;
   margin-bottom: 10px;
   border-radius: 3px;
 }
@@ -167,9 +193,10 @@ a {
 @media only screen and (min-width: 800px) {
   .navmenu {
     position: static;
-    width: 300px;
+    width: 325px;
     float: left;
     display: flex !important;
+    font-size: 0.9em;
   }
   .navmenuClose {
     display: none;
@@ -179,10 +206,22 @@ a {
   }
   .navbar {
     background-color: #202020;
+    padding: 15px;
   }
   .container {
-    width: calc(100% - 300px);
+    width: calc(100% - 325px);
     float: right;
+  }
+  .form input[type="button"], .form input[type="submit"] {
+	  width: 30%;
+	  align-self: flex-end;
+  }
+  .content {
+    padding: 30px;
+  }
+  .restaurantBox {
+    grid-template-columns: 20% 1fr;
+    height: 150px;
   }
 }
 
@@ -201,5 +240,14 @@ a {
   }
   to {
     left: -100%;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
