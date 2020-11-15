@@ -242,14 +242,16 @@ const FoodList = styled.div`
     object-fit: cover;
     width: 100%;
     height: 100%;
+    background-color: #ddd;
   }
   .foodBox > span {
     display: flex;
     flex-direction: column;
+    font-weight: 600;
   }
   .header {
-    font-weight: 600;
-    font-size: 1.1em;
+    font-size: 0.85em;
+    font-weight: normal;
   }
 
   @media only screen and (max-width: 800px) {
@@ -355,7 +357,9 @@ function FoodEdit() {
           value={price}
           onChange={handlePriceChange}
           type="text"
-          required
+          required={true}
+          pattern="\d*"
+          title="เฉพาะตัวเลข 0-9 เท่านั้น"
         />
         <span>คำอธิบายอาหาร</span>
         <textarea
@@ -553,7 +557,9 @@ function FoodAdd() {
         value={price}
         onChange={handlePriceChange}
         type="text"
-        required
+        required={true}
+        pattern="\d*"
+        title="เฉพาะตัวเลข 0-9 เท่านั้น"
       />
       <span>คำอธิบายอาหาร</span>
       <textarea

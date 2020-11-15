@@ -1,6 +1,6 @@
 import React from "react";
 import { useAsync } from "react-async";
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import ManagerStyle from "./Manager.module.css";
 import { Auth } from "../../utils/firebase";
 import apiFetcher from "../../utils/apiFetcher";
@@ -21,10 +21,9 @@ function RestaurantBox({ id, img, title, info }) {
 }
 
 function RestaurantSelector() {
-  const { restaurant_id } = useParams();
   const { data, error } = useAsync({
     promiseFn: apiFetcher,
-    url: `/manager/restaurant/list.php?id=${restaurant_id}&user_uid=${Auth.currentUser.uid}`,
+    url: `/manager/restaurant/list.php?user_uid=${Auth.currentUser.uid}`,
   });
 
   if (error) return error.message;

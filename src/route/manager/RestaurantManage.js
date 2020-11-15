@@ -4,6 +4,90 @@ import { useParams, useHistory } from "react-router-dom";
 import { useAsync } from "react-async";
 import ManagerStyle from "./Manager.module.css";
 import { Auth } from "../../utils/firebase";
+import QRCode from "qrcode";
+import { PDFDocument, rgb } from "pdf-lib";
+import fontkit from "@pdf-lib/fontkit";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faQrcode } from "@fortawesome/free-solid-svg-icons";
+
+async function QRCodePrint(restaurant_id, table_quantity) {
+  const pdf = await PDFDocument.create();
+  pdf.registerFontkit(fontkit);
+
+  const [kanitFont, background] = await Promise.all([
+    import("../../fonts/Kanit-Regular.ttf").then(async ({ default: font }) =>
+      pdf.embedFont(await fetch(font).then((res) => res.arrayBuffer()))
+    ),
+    import("../../background.jpg").then(async ({ default: image }) =>
+      pdf.embedJpg(await fetch(image).then((res) => res.arrayBuffer()))
+    ),
+  ]);
+
+  function downloadBlob(data, fileName, mimeType) {
+    let blob = new Blob([data], {
+      type: mimeType,
+    });
+    let url = window.URL.createObjectURL(blob);
+    downloadURL(url, fileName);
+    setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+  }
+
+  function downloadURL(data, fileName) {
+    const a = document.createElement("a");
+    a.href = data;
+    a.target = "_blank";
+    a.click();
+    a.remove();
+  }
+
+  for (let i = 1; i <= table_quantity; i++) {
+    const currentPage = pdf.addPage();
+    const { height, width } = currentPage.getSize();
+    const url = await QRCode.toDataURL(
+      `http://192.168.1.32:3000/restaurant/${restaurant_id}/${i}`,
+      {
+        width: width / 2,
+      }
+    );
+
+    const info = "โต๊ะที่" + i;
+    const infoSize = 50;
+    const infoWidth = kanitFont.widthOfTextAtSize(info, infoSize);
+
+    currentPage.drawImage(background, {
+      x: 0,
+      y: 0,
+      width,
+      height,
+    });
+
+    currentPage.drawText(info, {
+      x: width / 2 - infoWidth / 2 - 10,
+      y: 45,
+      size: infoSize,
+      font: kanitFont,
+      color: rgb(1, 1, 1),
+    });
+
+    currentPage.moveTo(width / 2, height / 2);
+
+    const image = await pdf.embedPng(url);
+    const imageDim = image;
+
+    currentPage.drawImage(image, {
+      x: width / 2 - imageDim.width / 2,
+      y: height / 2 - imageDim.height / 2,
+      width: imageDim.width,
+      height: imageDim.height,
+    });
+  }
+
+  pdf
+    .save()
+    .then((savedPDF) =>
+      downloadBlob(savedPDF, "qrcode.pdf", "application/pdf")
+    );
+}
 
 function RestaurantManage() {
   const param = useParams();
@@ -74,7 +158,8 @@ function RestaurantManage() {
     event.preventDefault();
 
     const formData = new FormData();
-    formData.append("image", imageRef.current.files[0]);
+    if (imageRef.current.files?.length > 0)
+      formData.append("image", imageRef.current.files[0]);
 
     const json = await apiFetcher({
       url: `/manager/restaurant/update.php?id=${param.restaurant_id}&name=${restaurantName}&info=${description}&table_quantity=${tableQuantity}&user_uid=${Auth.currentUser.uid}`,
@@ -129,7 +214,15 @@ function RestaurantManage() {
               max={99}
               value={tableQuantity}
               onChange={handleTableQuantityChange}
-            />
+            />{" "}
+            <button
+              type="button"
+              onClick={() =>
+                QRCodePrint(param.restaurant_id, data.result.table_quantity)
+              }
+            >
+              <FontAwesomeIcon icon={faQrcode} /> ปริ้น QR Code
+            </button>
           </label>
           รูปร้านอาหาร
           <img

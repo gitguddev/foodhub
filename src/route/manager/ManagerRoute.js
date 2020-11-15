@@ -6,6 +6,7 @@ const RestaurantManage = lazy(() => import("./RestaurantManage"));
 const Database = lazy(() => import("./Database"));
 
 const FoodManage = lazy(() => import("./FoodManage"));
+const OrderQueue = lazy(() => import("./OrderQueue"));
 
 export {
   RestaurantCreate,
@@ -13,4 +14,5 @@ export {
   Database,
   RestaurantManage,
   FoodManage,
+  OrderQueue,
 };

@@ -39,6 +39,10 @@ function Database() {
 
   return (
     <Switch>
+      <Route
+        path={`${match.path}/restaurant/qrcode`}
+        component={RestaurantManage}
+      />
       <Route path={`${match.path}/restaurant`} component={RestaurantManage} />
       <Route path={`${match.path}/food`} component={FoodManage} />
       <Route path={`${match.path}`} component={Menu} />
