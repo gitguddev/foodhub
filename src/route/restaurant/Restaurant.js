@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from "react";
+import React, { Suspense, lazy, useEffect, useState } from "react";
 import {
   faHome,
   faShoppingCart,
@@ -6,37 +6,43 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import RestaurantStyle from "./Restaurant.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Switch, Route, Link, useParams } from "react-router-dom";
+import { Switch, Route, Link, useRouteMatch, Redirect } from "react-router-dom";
 
 const Home = lazy(() => import("./Home"));
 const Cart = lazy(() => import("./Cart"));
 const Catalog = lazy(() => import("./Catalog"));
 
 function Restaurant() {
-  const { restaurant_id } = useParams();
+  const match = useRouteMatch();
+
+  if (!window.localStorage.getItem("auth")) return <Redirect to="/" />;
 
   return (
-    <div class={RestaurantStyle.container}>
+    <div className={RestaurantStyle.container}>
       <div className={RestaurantStyle.header}>
         <Switch>
-          <Route path="/restaurant/cart">ตระกร้า</Route>
-          <Route path="/restaurant/catalog">รายการ</Route>
-          <Route path="/restaurant">หน้าแรก</Route>
+          <Route path={`${match.path}/cart`}>ตระกร้า</Route>
+          <Route path={`${match.path}/catalog`}>รายการ</Route>
+          <Route path={`${match.path}`}>หน้าแรก</Route>
         </Switch>
       </div>
       <div className={RestaurantStyle.content}>
         <Suspense fallback={<div>กำลังโหลด</div>}>
           <Switch>
-            <Route path="/restaurant/cart" component={Cart} />
-            <Route path="/restaurant/catalog" component={Catalog} />
-            <Route path="/restaurant" component={Home} />
+            <Route path={`${match.path}/cart`} component={Cart} />
+            <Route path={`${match.path}/catalog`} component={Catalog} />
+            <Route path={`${match.path}`} component={Home} />
           </Switch>
         </Suspense>
       </div>
       <div className={RestaurantStyle.navigator}>
-        <NavBT icon={faScroll} title="รายการ" url="/restaurant/catalog" />
-        <NavBT icon={faHome} title="หน้าแรก" url="/restaurant/" />
-        <NavBT icon={faShoppingCart} title="ตระกร้า" url="/restaurant/cart" />
+        <NavBT icon={faScroll} title="รายการ" url={`${match.url}/catalog`} />
+        <NavBT icon={faHome} title="หน้าแรก" url={`${match.url}`} />
+        <NavBT
+          icon={faShoppingCart}
+          title="ตระกร้า"
+          url={`${match.url}/cart`}
+        />
       </div>
     </div>
   );

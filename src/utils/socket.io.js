@@ -1,32 +1,21 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import io from "socket.io-client";
 
-const Socket_Address = "ws://localhost:5000";
+const SOCKET_ADDRESS = "ws://localhost:5000";
 
-function createSocket(restaurant_id) {
-  const socket = io(Socket_Address, {
-    query: {
-      restaurant_id,
-    },
-  });
+const socket = io(SOCKET_ADDRESS);
 
-  return socket;
-}
-
-function useSocket(restaurant_id) {
-  const [socket, socketUpdate] = useState();
-
+function useOrder(restaurant_id, handler) {
   useEffect(() => {
-    const socket = createSocket(restaurant_id);
-    socketUpdate(socket);
+    socket.emit("join", restaurant_id);
+    socket.on("order", handler);
 
     return () => {
-      socket.disconnect();
-      socketUpdate();
+      socket.emit("leave", restaurant_id);
     };
-  }, [restaurant_id]);
+  }, [handler, restaurant_id]);
 
   return socket;
 }
 
-export { useSocket };
+export { useOrder };

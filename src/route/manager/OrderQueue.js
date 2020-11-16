@@ -2,7 +2,7 @@ import React from "react";
 import { useAsync } from "react-async";
 import apiFetcher from "../../utils/apiFetcher";
 import { Auth } from "../../utils/firebase";
-import { useSocket } from "../../utils/socket.io";
+import { useOrder } from "../../utils/socket.io";
 import { useParams } from "react-router-dom";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -71,17 +71,15 @@ const OperateButton = styled(FontAwesomeIcon)`
 
 function OrderQueue() {
   const { restaurant_id } = useParams();
-  const socket = useSocket(restaurant_id);
   const { data, error, reload } = useAsync({
     promiseFn: apiFetcher,
     url: `/manager/order/select.php?restaurant_id=${restaurant_id}&user_uid=${Auth.currentUser.uid}`,
   });
+  const socket = useOrder(restaurant_id, reload);
 
-  if (socket) socket.on("order", reload);
-
-  async function handleCancel(index) {
+  async function handleCancel(id) {
     const json = await apiFetcher({
-      url: `/manager/order/cancel.php?restaurant_id=${restaurant_id}&user_uid=${Auth.currentUser.uid}&id=${data.result[index].id}`,
+      url: `/manager/order/cancel.php?restaurant_id=${restaurant_id}&user_uid=${Auth.currentUser.uid}&id=${id}`,
     });
 
     if (json.message === "success") {
@@ -91,9 +89,9 @@ function OrderQueue() {
       console.error(json.message);
     }
   }
-  async function handleUpdate(index) {
+  async function handleUpdate(id) {
     const json = await apiFetcher({
-      url: `/manager/order/update.php?restaurant_id=${restaurant_id}&user_uid=${Auth.currentUser.uid}&id=${data.result[index].id}`,
+      url: `/manager/order/update.php?restaurant_id=${restaurant_id}&user_uid=${Auth.currentUser.uid}&id=${id}`,
     });
 
     if (json.message === "success") {
@@ -105,7 +103,9 @@ function OrderQueue() {
   }
 
   if (error) return error;
-  if (data?.message === "success" && socket)
+  if (data?.message === "success" && socket) {
+    const filteredData = data.result.filter((filter) => filter.status < 2);
+
     return (
       <OrderTable>
         <thead>
@@ -118,41 +118,44 @@ function OrderQueue() {
           </tr>
         </thead>
         <tbody>
-          {data.result?.length > 0
-            ? data.result
-                .filter((filter) => filter.status < 2)
-                .map((map, index) => (
-                  <tr key={map.id}>
-                    <td className="imageCell">
-                      <img className="foodImage" src={map.img} alt="food" />
-                    </td>
-                    <td>{map.name}</td>
-                    <td>{map.quantity}</td>
-                    <td>{map.restaurant_number}</td>
-                    <td>
-                      {statusMessage[map.status]}
-                      <div className="statusOperator">
-                        {map.status >= 0 && map.status < 2 && (
-                          <OperateButton
-                            icon={faCheck}
-                            onClick={() => handleUpdate(index)}
-                          />
-                        )}
-                        {map.status <= 0 && (
-                          <OperateButton
-                            icon={faTimes}
-                            onClick={() => handleCancel(index)}
-                            danger="true"
-                          />
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))
-            : "ไม่มีคำสั่งซื้อในขณะนี้"}
+          {filteredData.length > 0 ? (
+            filteredData.map((map, index) => (
+              <tr key={map.id}>
+                <td className="imageCell">
+                  <img className="foodImage" src={map.img} alt="food" />
+                </td>
+                <td>{map.name}</td>
+                <td>{map.quantity}</td>
+                <td>{map.restaurant_number}</td>
+                <td>
+                  <span>{statusMessage[map.status]}</span>
+                  <div className="statusOperator">
+                    {map.status >= 0 && map.status < 2 && (
+                      <OperateButton
+                        icon={faCheck}
+                        onClick={() => handleUpdate(map.id)}
+                      />
+                    )}
+                    {map.status <= 0 && (
+                      <OperateButton
+                        icon={faTimes}
+                        onClick={() => handleCancel(map.id)}
+                        danger="true"
+                      />
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan={5}>ไม่มีคำสั่งซื้อในขณะนี้</td>
+            </tr>
+          )}
         </tbody>
       </OrderTable>
     );
+  }
   return "Loading";
 }
 
