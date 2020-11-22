@@ -75,7 +75,7 @@ function OrderQueue() {
     promiseFn: apiFetcher,
     url: `/manager/order/select.php?restaurant_id=${restaurant_id}&user_uid=${Auth.currentUser.uid}`,
   });
-  const socket = useOrder(restaurant_id, reload);
+  const { socket, connected } = useOrder(restaurant_id, reload);
 
   async function handleCancel(id) {
     const json = await apiFetcher({
@@ -103,7 +103,7 @@ function OrderQueue() {
   }
 
   if (error) return error;
-  if (data?.message === "success" && socket) {
+  if (data?.message === "success" && connected) {
     const filteredData = data.result.filter((filter) => filter.status < 2);
 
     return (
@@ -114,6 +114,7 @@ function OrderQueue() {
             <th>ชื่ออาหาร</th>
             <th>จำนวน</th>
             <th>โต๊ะ</th>
+            <th>หมายเหตุ</th>
             <th>สถานะ</th>
           </tr>
         </thead>
@@ -127,6 +128,7 @@ function OrderQueue() {
                 <td>{map.name}</td>
                 <td>{map.quantity}</td>
                 <td>{map.restaurant_number}</td>
+                <td>{map.note || "-"}</td>
                 <td>
                   <span>{statusMessage[map.status]}</span>
                   <div className="statusOperator">
