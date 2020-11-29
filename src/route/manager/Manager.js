@@ -2,6 +2,7 @@ import React, { useState, useEffect, createContext, useContext } from "react";
 import ManagerStyle from "./Manager.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import checkBillSfx from "../../checkBill.mp3";
+import deskBellSfx from "../../deskBell.mp3";
 import {
   faHome,
   faDatabase,
@@ -141,6 +142,50 @@ const AlertLabelStyled = styled.div`
 `;
 
 const audio = new Audio(checkBillSfx);
+const deskBell = new Audio(deskBellSfx);
+
+function FoodAlertLabel() {
+  const { restaurant_id } = useParams();
+  const { socket } = useContext(Socket);
+  const { data, error, reload, cancel, isPending } = useAsync({
+    promiseFn: apiFetcher,
+    url: `/manager/order/select.php?restaurant_id=${restaurant_id}&user_uid=${Auth.currentUser.uid}`,
+  });
+
+  const length =
+    data?.result?.filter((filter) => parseInt(filter.status) < 2).length || 0;
+
+  function ReFetcher() {
+    socket.on("update", () => {
+      if (isPending) cancel();
+      reload();
+    });
+    socket.on("cancel", () => {
+      if (isPending) cancel();
+      reload();
+    });
+    socket.on("order", () => {
+      deskBell.play();
+      if (isPending) cancel();
+      reload();
+    });
+    return () => {
+      socket.off("order");
+      socket.off("update");
+      socket.off("cancel");
+      cancel();
+    };
+  }
+
+  //CHEAP WAY TO DETECT NEW SESSION, WILL SURELY BE REWORK SOON
+  useEffect(ReFetcher, [restaurant_id, cancel, reload, length]);
+
+  if (error) return error;
+  if (data?.message === "success") {
+    return <AlertLabelStyled alert={length > 0}>{length}</AlertLabelStyled>;
+  }
+  return <AlertLabelStyled>0</AlertLabelStyled>;
+}
 
 function AlertLabel() {
   const { restaurant_id } = useParams();
@@ -232,7 +277,12 @@ function RestaurantRoute() {
             <NavButton
               icon={faUtensils}
               to={`${match.url}/queue`}
-              title="คิวการสั่งอาหาร"
+              title={
+                <>
+                  <span>คิวการสั่งอาหาร</span>
+                  <FoodAlertLabel />
+                </>
+              }
             />
             <NavButton
               icon={faFileAlt}

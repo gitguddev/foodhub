@@ -76,17 +76,16 @@ const OperateButton = styled(FontAwesomeIcon)`
 
 function OrderQueue() {
   const { restaurant_id } = useParams();
-  const { data, error, reload, cancel } = useAsync({
+  const { data, error, reload } = useAsync({
     promiseFn: apiFetcher,
     url: `/manager/order/select.php?restaurant_id=${restaurant_id}&user_uid=${Auth.currentUser.uid}`,
   });
   const { socket, connected } = useContext(Socket);
 
   useEffect(() => {
+    socket.on("cancel", reload);
     socket.on("order", reload);
-    return () => {
-      socket.off("order");
-    };
+    socket.on("update", reload);
   });
 
   async function handleCancel(id) {

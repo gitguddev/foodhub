@@ -7,7 +7,14 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import RestaurantStyle from "./Restaurant.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Switch, Route, Link, useRouteMatch, Redirect } from "react-router-dom";
+import {
+  Switch,
+  Route,
+  Link,
+  useRouteMatch,
+  Redirect,
+  useHistory,
+} from "react-router-dom";
 import Loader from "../../utils/Loader";
 import styled, { keyframes } from "styled-components";
 import { createSocket } from "../../utils/socket.io";
@@ -53,12 +60,14 @@ const Catalog = lazy(() => import("./Catalog"));
 
 function Restaurant() {
   const match = useRouteMatch();
+  const history = useHistory();
   const [search, searchSet] = useState("");
   const [connected, connectedSet] = useState(!!socket.connected);
 
   socket.on("connect", () => connectedSet(true));
   socket.on("disconnect", () => connectedSet(false));
   socket.on("connect_error", () => connectedSet(false));
+  socket.on("completeBill", () => history.push(`/bill`));
 
   function handleSearchChange(event) {
     searchSet(event.target.value);

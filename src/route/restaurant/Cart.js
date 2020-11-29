@@ -274,12 +274,10 @@ function Cart() {
       history.push(`${match.url}`);
       modalSet();
     });
-    socket.on("completeBill", () => history.push(`/bill`));
     return () => {
       socket.off("update");
       socket.off("billing");
       socket.off("cancelBill");
-      socket.off("completeBill");
     };
   });
 
