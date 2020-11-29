@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, createContext, useContext } from "react";
 import ManagerStyle from "./Manager.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import checkBillSfx from "../../checkBill.mp3";
 import {
   faHome,
   faDatabase,
@@ -8,14 +9,24 @@ import {
   faUtensils,
   faPlus,
   faStore,
+  faChair,
 } from "@fortawesome/free-solid-svg-icons";
-import { Switch, Route, useRouteMatch, Redirect, Link } from "react-router-dom";
+import {
+  Switch,
+  Route,
+  useRouteMatch,
+  Redirect,
+  Link,
+  useParams,
+} from "react-router-dom";
 import Icon from "./icon.png";
 import ManagerShell, { NavButton } from "./ManagerShell";
+import apiFetcher from "../../utils/apiFetcher";
 
 //Utils
 import { AuthUI, Auth, AuthUIConfig } from "../../utils/firebase";
 import Modal from "../../utils/modal";
+import Loader from "../../utils/Loader";
 
 //Restaurant Select and Create
 import {
@@ -23,14 +34,43 @@ import {
   RestaurantSelect,
   Database,
   OrderQueue,
+  Session,
 } from "./ManagerRoute";
 
-function ManagerControlPanel() {
+import { createSocket } from "../../utils/socket.io";
+
+import styled from "styled-components";
+
+import { useAsync } from "react-async";
+
+// import RestaurantSelector from "./RestaurantSelect";
+
+const Socket = createContext();
+
+function ManagerControlPanel({ user }) {
   const [modalData, setModalData] = useState();
   const match = useRouteMatch();
+  const [connected, connectedSet] = useState(false);
+  const [socket, socketSet] = useState();
 
-  return (
-    <>
+  function socketCreation() {
+    const socket = createSocket(user);
+    socketSet(socket);
+    socket.on("connect", () => connectedSet(true));
+    socket.on("disconnect", () => connectedSet(false));
+    socket.on("connect_error", () => connectedSet(false));
+    return () => {
+      socket.disconnect();
+      socket.off("connect");
+      socket.off("disconnect");
+      socket.off("connect_error");
+    };
+  }
+
+  useEffect(socketCreation, [user]);
+
+  return connected ? (
+    <Socket.Provider value={{ socket, connected }}>
       <Modal modalData={modalData} onCloseEmit={() => setModalData()}></Modal>
       <Switch>
         <Route path={`${match.path}/list`} component={ListRoute} />
@@ -40,7 +80,9 @@ function ManagerControlPanel() {
         />
         <Redirect to={`${match.url}/list`} />
       </Switch>
-    </>
+    </Socket.Provider>
+  ) : (
+    <Loader />
   );
 }
 
@@ -89,53 +131,123 @@ function ListRoute() {
   );
 }
 
+const AlertLabelStyled = styled.div`
+  padding: 0 10px;
+  color: white;
+  background-color: ${(props) => (props.alert ? "red" : "blue")};
+  display: inline-block;
+  border-radius: 3px;
+  margin-left: 10px;
+`;
+
+const audio = new Audio(checkBillSfx);
+
+function AlertLabel() {
+  const { restaurant_id } = useParams();
+  const { socket } = useContext(Socket);
+  const { data, error, reload, cancel, isPending } = useAsync({
+    promiseFn: apiFetcher,
+    url: `/manager/session/get.php?restaurant_id=${restaurant_id}&user_uid=${Auth.currentUser.uid}`,
+  });
+
+  const length = data?.result?.length || 0;
+  const alert =
+    data?.result?.filter((filter) => parseInt(filter.status) === 1).length > 0;
+
+  function ReFetcher() {
+    const timer = setInterval(() => reload(), 1000);
+    socket.on("checkBill", () => {
+      audio.play();
+      if (isPending) cancel();
+      reload();
+    });
+    return () => {
+      socket.off("checkBill");
+      cancel();
+      clearInterval(timer);
+    };
+  }
+
+  //CHEAP WAY TO DETECT NEW SESSION, WILL SURELY BE REWORK SOON
+  useEffect(ReFetcher, [restaurant_id, cancel, reload, length]);
+
+  if (error) return error;
+  if (data?.message === "success") {
+    return <AlertLabelStyled alert={alert}>{length}</AlertLabelStyled>;
+  }
+  return <AlertLabelStyled>0</AlertLabelStyled>;
+}
+
 function RestaurantRoute() {
   const match = useRouteMatch();
+  const { restaurant_id } = useParams();
+  const { socket } = useContext(Socket);
+
+  useEffect(() => {
+    socket.emit("join", restaurant_id);
+    return () => {
+      socket.emit("leave", restaurant_id);
+    };
+  }, [restaurant_id, socket]);
 
   return (
-    <ManagerShell
-      title={
-        <Switch>
-          <Route path={`${match.path}/database`}>จัดการข้อมูล</Route>
-          <Route path={`${match.path}/report`}>รายงาน</Route>
-          <Route path={`${match.path}/queue`}>คิวการสั่งอาหาร</Route>
-          <Route path={match.path}>หน้าแรก</Route>
-        </Switch>
-      }
-      content={
-        <Switch>
-          <Route path={`${match.path}/database`} component={Database} />
-          <Route path={`${match.path}/report`} component={() => "รายงาน"} />
-          <Route path={`${match.path}/queue`} component={OrderQueue} />
-          <Route path={match.path} component={() => "หน้าแรก"} />
-        </Switch>
-      }
-      panel={
-        <>
-          <NavButton icon={faHome} to={match.url} exact title="หน้าแรก" />
-          <NavButton
-            icon={faDatabase}
-            to={`${match.url}/database`}
-            title="จัดการข้อมูล"
-          />
-          <NavButton
-            icon={faUtensils}
-            to={`${match.url}/queue`}
-            title="คิวการสั่งอาหาร"
-          />
-          <NavButton
-            icon={faFileAlt}
-            to={`${match.url}/report`}
-            title="รายงาน"
-          />
-          <NavButton
-            icon={faStore}
-            to={`/manager/list`}
-            title="เลือกร้านอาหาร"
-          />
-        </>
-      }
-    />
+    <>
+      <ManagerShell
+        title={
+          <Switch>
+            <Route path={`${match.path}/database`}>จัดการข้อมูล</Route>
+            <Route path={`${match.path}/session`}>เซสชั่น</Route>
+            <Route path={`${match.path}/report`}>รายงาน</Route>
+            <Route path={`${match.path}/queue`}>คิวการสั่งอาหาร</Route>
+            <Route path={match.path}>หน้าแรก</Route>
+          </Switch>
+        }
+        content={
+          <Switch>
+            <Route path={`${match.path}/database`} component={Database} />
+            <Route path={`${match.path}/session`} component={Session} />
+            <Route path={`${match.path}/report`} component={() => "รายงาน"} />
+            <Route path={`${match.path}/queue`} component={OrderQueue} />
+            <Route path={match.path} component={() => "หน้าแรก"} />
+          </Switch>
+        }
+        panel={
+          <>
+            <NavButton icon={faHome} to={match.url} exact title="หน้าแรก" />
+            <NavButton
+              icon={faDatabase}
+              to={`${match.url}/database`}
+              title="จัดการข้อมูล"
+            />
+            <NavButton
+              icon={faChair}
+              to={`${match.url}/session`}
+              title={
+                <>
+                  <span>เซสชั่น</span>
+                  <AlertLabel />
+                </>
+              }
+            />
+            <NavButton
+              icon={faUtensils}
+              to={`${match.url}/queue`}
+              title="คิวการสั่งอาหาร"
+            />
+            <NavButton
+              icon={faFileAlt}
+              to={`${match.url}/report`}
+              title="รายงาน"
+            />
+            <NavButton
+              icon={faStore}
+              to={`/manager/list`}
+              title="เลือกร้านอาหาร"
+            />
+          </>
+        }
+      />
+    </>
   );
 }
 
@@ -148,6 +260,7 @@ function SignInForm() {
     <div>
       <div className={ManagerStyle.formHeader}>
         <img
+          alt="FoodHub icon"
           style={{
             objectFit: "cover",
           }}
@@ -182,13 +295,9 @@ function Manager() {
   const [isSignedIn, setSignState] = useState(null);
   const match = useRouteMatch();
 
-  useEffect(() =>
-    Auth.onAuthStateChanged((user) =>
-      setSignState(user === null ? false : true)
-    )
-  );
+  useEffect(() => Auth.onAuthStateChanged((user) => setSignState(user)));
 
-  if (isSignedIn !== null) {
+  if (isSignedIn) {
     return (
       <Switch>
         <Route
@@ -197,7 +306,9 @@ function Manager() {
             !isSignedIn ? <SignInForm /> : <Redirect to={`/manager`} />
           }
         />
-        <PrivateRoute path={`${match.path}`} component={ManagerControlPanel} />
+        <PrivateRoute path={`${match.path}`}>
+          <ManagerControlPanel user={isSignedIn} />
+        </PrivateRoute>
       </Switch>
     );
   } else {
@@ -205,3 +316,4 @@ function Manager() {
   }
 }
 export default Manager;
+export { Socket };

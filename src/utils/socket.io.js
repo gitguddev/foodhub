@@ -1,7 +1,29 @@
 import { useEffect, useState } from "react";
 import io from "socket.io-client";
+import { SERVER_ADDRESS } from "./config";
 
-const SOCKET_ADDRESS = "ws://192.168.1.32:5000";
+const SOCKET_ADDRESS = `ws://${SERVER_ADDRESS}:5000`;
+
+function createSocket(currentUser) {
+  let socket;
+  if (currentUser) {
+    socket = io(SOCKET_ADDRESS, {
+      query: {
+        method: "manager",
+        uid: currentUser.uid,
+      },
+    });
+  } else {
+    socket = io(SOCKET_ADDRESS, {
+      query: {
+        method: "restaurant",
+        authentication: window.localStorage.getItem("auth"),
+      },
+    });
+  }
+
+  return socket;
+}
 
 function useOrder(restaurant_id, handler) {
   const [socket] = useState(
@@ -23,7 +45,7 @@ function useOrder(restaurant_id, handler) {
     return () => {
       socket.close();
     };
-  }, []);
+  }, [handler, socket]);
 
   return { socket, connected };
 }
@@ -48,9 +70,9 @@ function useUpdate(handler) {
     return () => {
       socket.close();
     };
-  }, []);
+  }, [handler, socket]);
 
   return { socket, connected };
 }
 
-export { useOrder, useUpdate };
+export { useOrder, useUpdate, createSocket };

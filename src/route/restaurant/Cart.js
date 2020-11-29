@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { useAuthAPI } from "../../utils/apiFetcher";
-import { useUpdate } from "../../utils/socket.io";
-import styled from "styled-components";
 import Loader from "../../utils/Loader";
+import styled from "styled-components";
 import numeral from "numeral";
-
-import { colorToComponents } from "pdf-lib";
+import { useRouteMatch, Switch, Route, useHistory } from "react-router-dom";
+import { Socket } from "./Restaurant";
+import { default as BillLoader } from "react-loader-spinner";
 
 const CartContainer = styled.div`
   padding: 10px;
@@ -14,10 +14,6 @@ const CartContainer = styled.div`
   position: relative;
   height: calc(100% - 46px);
   overflow: auto;
-`;
-
-const Empty = styled.div`
-  height: 85px;
 `;
 
 const StatusLabel = styled.span`
@@ -213,27 +209,104 @@ const BilledButton = styled.button`
     background-color: ${(props) => (props.danger ? "#ab0000" : "#004a00")};
     transition: all 0.3s;
   }
+
+  @media only screen and (min-width: 800px) {
+    & {
+      font-size: 0.7em;
+    }
+  }
 `;
 
-function Modal({ data, closeEmit }) {
+function Modal({ data, closeEmit, force }) {
   return (
     <ModalStyled>
-      <div className="background" onClick={() => closeEmit()}></div>
+      <div
+        className="background"
+        onClick={!force ? () => closeEmit() : null}
+      ></div>
       <div className="modal">{data}</div>
     </ModalStyled>
   );
 }
 
+const BillingModal = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+
+  svg {
+    color: #555;
+  }
+`;
+
+const TotalPayment = styled.span`
+  font-size: 1.4em;
+  text-decoration: underline;
+`;
+
+function BillingModalStyled({ price }) {
+  return (
+    <BillingModal>
+      <TotalPayment>รวมสุทธิที่ต้องจ่าย</TotalPayment>
+      <span>{numeral(price).format("0,0.00")} บาท</span>
+      <BillLoader color="#aaa" type="ThreeDots" />
+      <span>กรุณารอพนักงาน</span>
+    </BillingModal>
+  );
+}
+
 function Cart() {
   const { data, error, reload } = useAuthAPI(`/restaurant/order/select.php`);
-  const { socket, connected } = useUpdate(reload);
   const [modal, modalSet] = useState();
+  const [force, forceSet] = useState(false);
+  const match = useRouteMatch();
+  const history = useHistory();
+
+  const { socket, connected } = useContext(Socket);
+
+  useEffect(() => {
+    socket.on("update", reload);
+    socket.on("billing", () => history.push(`${match.url}/billing`));
+    socket.on("cancelBill", () => {
+      history.push(`${match.url}`);
+      modalSet();
+    });
+    socket.on("completeBill", () => history.push(`/bill`));
+    return () => {
+      socket.off("update");
+      socket.off("billing");
+      socket.off("cancelBill");
+      socket.off("completeBill");
+    };
+  });
+
+  function checkBill() {
+    socket.emit("checkBill");
+    forceSet(true);
+    history.push(`${match.url}/billing`);
+  }
 
   if (error) return error;
-  if (data?.message === "success" && connected)
+  if (data?.message === "success" && connected) {
+    const totalPrice = data.result?.length > 0 ? data.result[0].total : 0;
+
     return (
       <>
-        {modal && <Modal data={modal} closeEmit={modalSet} />}
+        <Switch>
+          <Route path={`${match.path}/billing`}>
+            <Modal
+              data={<BillingModalStyled price={totalPrice} />}
+              closeEmit={modalSet}
+              force={force}
+            />
+          </Route>
+          <Route path={`${match.path}`}>
+            {modal && <Modal data={modal} closeEmit={modalSet} force={force} />}
+          </Route>
+        </Switch>
         <CartContainer>
           <StatusLabel>
             อยู่ในกระบวนการ
@@ -265,14 +338,11 @@ function Cart() {
         </CartContainer>
         <TotalBar>
           <span>
-            รวมทั้งสิ้น{" "}
-            {data.result?.length
-              ? numeral(data.result[0].total).format("0,0.00")
-              : "0.00"}{" "}
+            รวมทั้งสิ้น {numeral(totalPrice).format("0,0.00") + " "}
             บาท
           </span>
           <Billed
-            disabled={data.result[0].total <= 0}
+            disabled={data.result?.length === 0 || totalPrice <= 0}
             onClick={() =>
               modalSet(
                 <BilledModal>
@@ -287,7 +357,7 @@ function Cart() {
                     <BilledButton danger onClick={() => modalSet()}>
                       ยกเลิก
                     </BilledButton>
-                    <BilledButton>ยืนยัน</BilledButton>
+                    <BilledButton onClick={checkBill}>ยืนยัน</BilledButton>
                   </div>
                 </BilledModal>
               )
@@ -298,6 +368,7 @@ function Cart() {
         </TotalBar>
       </>
     );
+  }
   return <Loader />;
 }
 

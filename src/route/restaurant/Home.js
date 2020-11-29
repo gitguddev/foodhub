@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { ReactComponent as Food } from "./Popular Food.svg";
 import { Link } from "react-router-dom";
-//import RestaurantStyle from "./Restaurant.module.css";
 import styled, { keyframes } from "styled-components";
 import { useAuthAPI } from "../../utils/apiFetcher";
 import Loader from "../../utils/Loader";
 import numeral from "numeral";
+//import { ReactComponent as Food } from "./Popular Food.svg";
+//import RestaurantStyle from "./Restaurant.module.css";
 
 const DashboardStyled = styled.div`
   background-color: #232323;
@@ -86,6 +86,7 @@ const FoodCatalog = styled.div`
     border-radius: 3px;
     object-fit: cover;
     user-select: none;
+    z-index: 0;
   }
 
   @media only screen and (min-width: 1024px) {
@@ -126,14 +127,37 @@ const RecommendLabel = styled.div`
   font-size: 0.8em;
 `;
 
+const CatalogLink = styled(Link)`
+  position: relative;
+  z-index: 1;
+
+  & > button:hover {
+    cursor: pointer !important;
+  }
+`;
+
 function FoodCatalogStyled() {
   const { data, error } = useAuthAPI(`/restaurant/food/list.php`);
 
   if (error) return error;
   if (data?.message === "success") {
-    const catalog = data.result
-      .filter((filter, index) => index < 6)
-      .map((map) => <img key={map.id} src={map.img} alt="food" />);
+    let catalog;
+    if (data.result.length >= 6) {
+      catalog = data.result
+        .filter((filter, index) => index < 6)
+        .map((map) => <img key={map.id} src={map.img} alt="food" />);
+    } else {
+      catalog = [
+        ...data.result
+          .filter((filter, index) => index < 6)
+          .map((map) => <img key={map.id} src={map.img} alt="food" />),
+        ...data.result
+          .filter((filter, index) => index < 6 - data.result.length)
+          .map((map) => (
+            <img key={data.result.length + map.id} src={map.img} alt="food" />
+          )),
+      ];
+    }
     return <FoodCatalog onTouchStart={() => {}}>{catalog}</FoodCatalog>;
   }
   return <Loader />;
@@ -182,16 +206,14 @@ function Home() {
           <Detail>
             รวมยอดสุทธิ {numeral(data.result.total).format("0,0.00")} บาท
           </Detail>
-          <CatalogButton>ดูรายการอาหาร</CatalogButton>
+          <CatalogLink to={`/restaurant/catalog`}>
+            <CatalogButton>ดูรายการอาหาร</CatalogButton>
+          </CatalogLink>
           <RecommendLabel>แนะนำ</RecommendLabel>
         </DashboardStyled>
         <FoodCatalogContainer>
           <FoodCatalogStyled />
         </FoodCatalogContainer>
-        {/*<Food className={RestaurantStyle.popularFood} />
-      <Link to="/catalog">
-        <div className={RestaurantStyle.seeMore}>ดูเมนูทั้งหมด</div>
-      </Link>*/}
       </>
     );
   return <Loader />;

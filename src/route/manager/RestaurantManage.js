@@ -44,7 +44,7 @@ async function QRCodePrint(restaurant_id, table_quantity) {
     const currentPage = pdf.addPage();
     const { height, width } = currentPage.getSize();
     const url = await QRCode.toDataURL(
-      `http://192.168.1.32:3000/restaurant/${restaurant_id}/${i}`,
+      `http://192.168.250.72:3000/restaurant/auth/${restaurant_id}/${i}`,
       {
         width: width / 2,
       }
@@ -106,6 +106,7 @@ function RestaurantManage() {
     promiseFn: apiFetcher,
     url: `/manager/restaurant/get.php?id=${param.restaurant_id}&user_uid=${Auth.currentUser.uid}`,
     onResolve({ result }) {
+      console.log(result);
       restaurantNameUpdate(result.name);
       descriptionUpdate(result.info);
       tableQuantityUpdate(result.table_quantity);

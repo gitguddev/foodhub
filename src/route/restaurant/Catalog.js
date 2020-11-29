@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useAuthAPI } from "../../utils/apiFetcher";
 import Loader from "../../utils/Loader";
 import styled, { keyframes } from "styled-components";
@@ -8,11 +8,12 @@ import {
   useRouteMatch,
   Route,
   Switch,
+  useHistory,
 } from "react-router-dom";
 import numeral from "numeral";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faShoppingCart } from "@fortawesome/free-solid-svg-icons";
-import { useUpdate } from "../../utils/socket.io";
+import { Socket } from "./Restaurant";
 
 const FadeIn = keyframes`
 from {
@@ -227,10 +228,14 @@ function SearchFood({ search, modalSet }) {
 }
 
 function FoodInfo({ data, handleClose }) {
-  const { socket, connected } = useUpdate(() => {});
+  const history = useHistory();
 
   const [quantity, quantitySet] = useState(1);
   const [note, noteSet] = useState("");
+
+  const { socket, connected } = useContext(Socket);
+
+  socket.on("billing", () => history.push("/restaurant/cart/billing"));
 
   function handleOrder() {
     socket.emit("order", data.id, quantity, note);
@@ -266,6 +271,7 @@ function FoodInfo({ data, handleClose }) {
             <NoteInputStyled onChange={handleNoteChange} value={note} />
           </div>
           <OrderButtonStyled onClick={handleOrder} disabled={!connected}>
+            {" "}
             สั่งอาหาร <FontAwesomeIcon icon={faShoppingCart} />
           </OrderButtonStyled>
         </div>

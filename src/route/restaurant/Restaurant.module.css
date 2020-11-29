@@ -71,3 +71,12 @@ a {
   border: 1px solid #232323;
   border-radius: 10px;
 }
+
+@media only screen and (min-width: 700px) {
+  .navigator a {
+    font-size: 0.8em;
+  }
+  .header {
+    font-size: 0.8em;
+  }
+}

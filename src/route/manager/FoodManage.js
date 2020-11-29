@@ -723,7 +723,6 @@ function FoodManageInterface() {
                                       onClick={() => handleDelete(map.id)}
                                       icon={faTimes}
                                     />
-                                    <FontAwesomeIcon icon={faBars} />
                                   </span>
                                 </>
                               )}

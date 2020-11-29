@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useState } from "react";
+import React, { Suspense, lazy, useState, createContext } from "react";
 import {
   faHome,
   faShoppingCart,
@@ -10,7 +10,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Switch, Route, Link, useRouteMatch, Redirect } from "react-router-dom";
 import Loader from "../../utils/Loader";
 import styled, { keyframes } from "styled-components";
-import { useUpdate } from "../../utils/socket.io";
+import { createSocket } from "../../utils/socket.io";
+
+const socket = createSocket(false);
+const Socket = createContext();
 
 const CatalogHeader = styled.div`
   display: flex;
@@ -51,6 +54,11 @@ const Catalog = lazy(() => import("./Catalog"));
 function Restaurant() {
   const match = useRouteMatch();
   const [search, searchSet] = useState("");
+  const [connected, connectedSet] = useState(!!socket.connected);
+
+  socket.on("connect", () => connectedSet(true));
+  socket.on("disconnect", () => connectedSet(false));
+  socket.on("connect_error", () => connectedSet(false));
 
   function handleSearchChange(event) {
     searchSet(event.target.value);
@@ -58,53 +66,57 @@ function Restaurant() {
 
   if (!window.localStorage.getItem("auth")) return <Redirect to="/" />;
 
-  return (
-    <div className={RestaurantStyle.container}>
-      <div className={RestaurantStyle.header}>
-        <Switch>
-          <Route path={`${match.path}/cart`}>ตระกร้า</Route>
-          <Route path={`${match.path}/catalog/search`}>
-            <CatalogHeader>
-              <span>ค้นหาอาหาร</span>
-              <SearchInput value={search} onChange={handleSearchChange} />
-            </CatalogHeader>
-          </Route>
-          <Route path={`${match.path}/catalog`}>
-            <CatalogHeader>
-              <span>รายการ</span>
-              <Link
-                style={{ color: "white" }}
-                to={`${match.url}/catalog/search`}
-              >
-                <FontAwesomeIcon icon={faSearch} />
-              </Link>
-            </CatalogHeader>
-          </Route>
-          <Route path={`${match.path}`}>หน้าแรก</Route>
-        </Switch>
-      </div>
-      <div className={RestaurantStyle.content}>
-        <Suspense fallback={<Loader />}>
+  return connected ? (
+    <Socket.Provider value={{ socket, connected }}>
+      <div className={RestaurantStyle.container}>
+        <div className={RestaurantStyle.header}>
           <Switch>
-            <Route path={`${match.path}/cart`} component={Cart} />
+            <Route path={`${match.path}/cart`}>ตระกร้า</Route>
             <Route path={`${match.path}/catalog/search`}>
-              <Catalog search={search} />
+              <CatalogHeader>
+                <span>ค้นหาอาหาร</span>
+                <SearchInput value={search} onChange={handleSearchChange} />
+              </CatalogHeader>
             </Route>
-            <Route path={`${match.path}/catalog`} component={Catalog} />
-            <Route path={`${match.path}`} component={Home} />
+            <Route path={`${match.path}/catalog`}>
+              <CatalogHeader>
+                <span>รายการ</span>
+                <Link
+                  style={{ color: "white" }}
+                  to={`${match.url}/catalog/search`}
+                >
+                  <FontAwesomeIcon icon={faSearch} />
+                </Link>
+              </CatalogHeader>
+            </Route>
+            <Route path={`${match.path}`}>หน้าแรก</Route>
           </Switch>
-        </Suspense>
+        </div>
+        <div className={RestaurantStyle.content}>
+          <Suspense fallback={<Loader />}>
+            <Switch>
+              <Route path={`${match.path}/cart`} component={Cart} />
+              <Route path={`${match.path}/catalog/search`}>
+                <Catalog search={search} />
+              </Route>
+              <Route path={`${match.path}/catalog`} component={Catalog} />
+              <Route path={`${match.path}`} component={Home} />
+            </Switch>
+          </Suspense>
+        </div>
+        <div className={RestaurantStyle.navigator}>
+          <NavBT icon={faScroll} title="รายการ" url={`${match.url}/catalog`} />
+          <NavBT icon={faHome} title="หน้าแรก" url={`${match.url}`} />
+          <NavBT
+            icon={faShoppingCart}
+            title="ตระกร้า"
+            url={`${match.url}/cart`}
+          />
+        </div>
       </div>
-      <div className={RestaurantStyle.navigator}>
-        <NavBT icon={faScroll} title="รายการ" url={`${match.url}/catalog`} />
-        <NavBT icon={faHome} title="หน้าแรก" url={`${match.url}`} />
-        <NavBT
-          icon={faShoppingCart}
-          title="ตระกร้า"
-          url={`${match.url}/cart`}
-        />
-      </div>
-    </div>
+    </Socket.Provider>
+  ) : (
+    <Loader />
   );
 }
 
@@ -120,3 +132,4 @@ function NavBT({ icon, title, url }) {
 }
 
 export default Restaurant;
+export { Socket };

@@ -14,13 +14,15 @@ async function Auther({ restaurant_id, table_number, history }) {
     switch (json.message) {
       case "success":
         return {
-          restaurant_id: json.result.restaurant_id,
-          table_number: json.result.table_number,
+          message: "success",
         };
+      case "billing":
+        return { message: "billing" };
       case "session ended":
-        storage.removeItem("auth");
-        alert("เซสชั่นหมดอายุแล้ว");
-        throw new Error(json.message);
+        history.push("/bill");
+        // alert("เซสชั่นหมดอายุแล้ว");
+        // throw new Error(json.message);
+        break;
       case "token parse error":
         storage.removeItem("auth");
         alert("token ไม่ถูกต้อง");
@@ -37,8 +39,7 @@ async function Auther({ restaurant_id, table_number, history }) {
       case "success":
         storage.setItem("auth", json.result);
         return {
-          restaurant_id,
-          table_number,
+          message: "success",
         };
       case "already has session":
         alert("มีคนนั่งอยู่ที่โต๊ะนี้อยู่แล้ว");
@@ -65,7 +66,11 @@ function Auth() {
   });
 
   if (error) return <Redirect to={`/error`} />;
-  if (data) return <Redirect to={`/restaurant`} />;
+  if (data?.message === "success") {
+    return <Redirect to={`/restaurant`} />;
+  } else if (data?.message === "billing") {
+    return <Redirect to={`/restaurant/cart/billing`} />;
+  }
   return "Authenticationing...";
 }
 

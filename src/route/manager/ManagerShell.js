@@ -9,13 +9,14 @@ import {
 import { Auth } from "../../utils/firebase";
 import { NavLink } from "react-router-dom";
 
-function NavButton({ icon, title, to, exact }) {
+function NavButton({ icon, title, to, exact, onClick }) {
   return (
     <NavLink
       className={ManagerStyle.navmenuButton}
       to={to}
       activeClassName={ManagerStyle.navmenuSelected}
       exact={exact}
+      onClick={onClick}
     >
       <div>
         <FontAwesomeIcon icon={icon} /> {title}

@@ -1,10 +1,11 @@
 import { useAsync } from "react-async";
 import { useHistory } from "react-router-dom";
+import { SERVER_ADDRESS } from "./config";
 
-const SERVER_ADDRESS = "http://192.168.1.32";
+const SERVER = "http://" + SERVER_ADDRESS;
 
 function apiFetcher({ url, option }) {
-  const API = `${SERVER_ADDRESS}/~littleboycoding/foodhub_api`;
+  const API = `${SERVER}/~littleboycoding/foodhub_api`;
 
   return fetch(`${API}${url}`, {
     headers: { Accept: "application/json" },
@@ -35,9 +36,12 @@ function useAuthAPI(url, option) {
     onResolve(data) {
       switch (data.message) {
         case "session ended":
-          alert("เซสชั่นหมดอายุแล้ว");
-          window.localStorage.removeItem("auth");
-          history.push("/error");
+          // alert("เซสชั่นหมดอายุแล้ว");
+          // window.localStorage.removeItem("auth");
+          history.push("/bill");
+          break;
+        case "billing":
+          history.push("/restaurant/cart/billing");
           break;
         case "token parse error":
           alert("token ไม่ถูกต้อง");

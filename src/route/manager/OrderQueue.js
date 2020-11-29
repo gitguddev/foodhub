@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext, useEffect } from "react";
 import { useAsync } from "react-async";
 import apiFetcher from "../../utils/apiFetcher";
 import { Auth } from "../../utils/firebase";
@@ -7,6 +7,7 @@ import { useParams } from "react-router-dom";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { Socket } from "./Manager";
 
 const statusMessage = [
   "กำลังรอการยืนยัน",
@@ -33,7 +34,7 @@ const OrderTable = styled.table`
   th {
     text-align: center;
     padding: 5px;
-    width: calc(100% / 5) !important;
+    width: calc(100% / 6) !important;
     overflow: hidden;
   }
   .foodImage {
@@ -56,6 +57,10 @@ const OrderTable = styled.table`
     .imageCell {
       display: none;
     }
+    td,
+    th {
+      width: calc(100% / 5) !important;
+    }
   }
 `;
 
@@ -71,11 +76,18 @@ const OperateButton = styled(FontAwesomeIcon)`
 
 function OrderQueue() {
   const { restaurant_id } = useParams();
-  const { data, error, reload } = useAsync({
+  const { data, error, reload, cancel } = useAsync({
     promiseFn: apiFetcher,
     url: `/manager/order/select.php?restaurant_id=${restaurant_id}&user_uid=${Auth.currentUser.uid}`,
   });
-  const { socket, connected } = useOrder(restaurant_id, reload);
+  const { socket, connected } = useContext(Socket);
+
+  useEffect(() => {
+    socket.on("order", reload);
+    return () => {
+      socket.off("order");
+    };
+  });
 
   async function handleCancel(id) {
     const json = await apiFetcher({
@@ -104,7 +116,10 @@ function OrderQueue() {
 
   if (error) return error;
   if (data?.message === "success" && connected) {
-    const filteredData = data.result.filter((filter) => filter.status < 2);
+    const filteredData =
+      data.result?.length > 0
+        ? data.result.filter((filter) => filter.status < 2)
+        : [];
 
     return (
       <OrderTable>
@@ -151,7 +166,7 @@ function OrderQueue() {
             ))
           ) : (
             <tr>
-              <td colSpan={5}>ไม่มีคำสั่งซื้อในขณะนี้</td>
+              <td colSpan={6}>ไม่มีคำสั่งซื้อในขณะนี้</td>
             </tr>
           )}
         </tbody>
