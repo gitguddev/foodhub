@@ -19,6 +19,7 @@ import {
   Redirect,
   Link,
   useParams,
+  useHistory,
 } from "react-router-dom";
 import Icon from "./icon.png";
 import ManagerShell, { NavButton } from "./ManagerShell";
@@ -36,6 +37,7 @@ import {
   Database,
   OrderQueue,
   Session,
+  Report,
 } from "./ManagerRoute";
 
 import { createSocket } from "../../utils/socket.io";
@@ -49,8 +51,9 @@ import { useAsync } from "react-async";
 const Socket = createContext();
 
 function ManagerControlPanel({ user }) {
-  const [modalData, setModalData] = useState();
+  const worker = useWorker();
   const match = useRouteMatch();
+  const [modalData, setModalData] = useState();
   const [connected, connectedSet] = useState(false);
   const [socket, socketSet] = useState();
 
@@ -70,7 +73,21 @@ function ManagerControlPanel({ user }) {
 
   useEffect(socketCreation, [user]);
 
-  return connected ? (
+  if (worker?.restaurant_id) {
+    return (
+      <Socket.Provider value={{ socket, connected }}>
+        <Switch>
+          <Route
+            path={`${match.path}/restaurant/:restaurant_id`}
+            component={RestaurantRoute}
+          />
+          <Redirect to={`${match.url}/restaurant/${worker.restaurant_id}`} />
+        </Switch>
+      </Socket.Provider>
+    );
+  }
+
+  return !worker && connected && user ? (
     <Socket.Provider value={{ socket, connected }}>
       <Modal modalData={modalData} onCloseEmit={() => setModalData()}></Modal>
       <Switch>
@@ -147,7 +164,7 @@ const deskBell = new Audio(deskBellSfx);
 function FoodAlertLabel() {
   const { restaurant_id } = useParams();
   const { socket } = useContext(Socket);
-  const { data, error, reload, cancel, isPending } = useAsync({
+  const { data, error, reload } = useAsync({
     promiseFn: apiFetcher,
     url: `/manager/order/select.php?restaurant_id=${restaurant_id}&user_uid=${Auth.currentUser.uid}`,
   });
@@ -156,29 +173,29 @@ function FoodAlertLabel() {
     data?.result?.filter((filter) => parseInt(filter.status) < 2).length || 0;
 
   function ReFetcher() {
-    socket.on("update", () => {
-      if (isPending) cancel();
+    function Reloader(play) {
+      if (play) {
+        try {
+          deskBell.play();
+        } catch (error) {
+          throw new Error(error);
+        }
+      }
       reload();
-    });
-    socket.on("cancel", () => {
-      if (isPending) cancel();
-      reload();
-    });
-    socket.on("order", () => {
-      deskBell.play();
-      if (isPending) cancel();
-      reload();
-    });
+    }
+
+    socket.on("updateNavbar", Reloader);
+    socket.on("cancelNavbar", Reloader);
+    socket.on("orderNavbar", () => Reloader(true));
     return () => {
-      socket.off("order");
-      socket.off("update");
-      socket.off("cancel");
-      cancel();
+      socket.off("updateNavbar");
+      socket.off("cancelNavbar");
+      socket.off("orderNavbar");
     };
   }
 
   //CHEAP WAY TO DETECT NEW SESSION, WILL SURELY BE REWORK SOON
-  useEffect(ReFetcher, [restaurant_id, cancel, reload, length]);
+  useEffect(ReFetcher, [restaurant_id, socket, reload]);
 
   if (error) return error;
   if (data?.message === "success") {
@@ -227,14 +244,17 @@ function RestaurantRoute() {
   const match = useRouteMatch();
   const { restaurant_id } = useParams();
   const { socket } = useContext(Socket);
+  const worker = useWorker();
+  const role = worker?.role;
 
   useEffect(() => {
     socket.emit("join", restaurant_id);
     return () => {
       socket.emit("leave", restaurant_id);
     };
-  }, [restaurant_id, socket]);
+  }, [match, restaurant_id, socket]);
 
+  if (worker === "loading") return <Loader />;
   return (
     <>
       <ManagerShell
@@ -251,7 +271,7 @@ function RestaurantRoute() {
           <Switch>
             <Route path={`${match.path}/database`} component={Database} />
             <Route path={`${match.path}/session`} component={Session} />
-            <Route path={`${match.path}/report`} component={() => "รายงาน"} />
+            <Route path={`${match.path}/report`} component={Report} />
             <Route path={`${match.path}/queue`} component={OrderQueue} />
             <Route path={match.path} component={() => "หน้าแรก"} />
           </Switch>
@@ -259,41 +279,51 @@ function RestaurantRoute() {
         panel={
           <>
             <NavButton icon={faHome} to={match.url} exact title="หน้าแรก" />
-            <NavButton
-              icon={faDatabase}
-              to={`${match.url}/database`}
-              title="จัดการข้อมูล"
-            />
-            <NavButton
-              icon={faChair}
-              to={`${match.url}/session`}
-              title={
-                <>
-                  <span>เซสชั่น</span>
-                  <AlertLabel />
-                </>
-              }
-            />
-            <NavButton
-              icon={faUtensils}
-              to={`${match.url}/queue`}
-              title={
-                <>
-                  <span>คิวการสั่งอาหาร</span>
-                  <FoodAlertLabel />
-                </>
-              }
-            />
-            <NavButton
-              icon={faFileAlt}
-              to={`${match.url}/report`}
-              title="รายงาน"
-            />
-            <NavButton
-              icon={faStore}
-              to={`/manager/list`}
-              title="เลือกร้านอาหาร"
-            />
+            {(!worker || role === 2) && (
+              <NavButton
+                icon={faDatabase}
+                to={`${match.url}/database`}
+                title="จัดการข้อมูล"
+              />
+            )}
+            {(!worker || role === 0 || role === 2) && (
+              <NavButton
+                icon={faChair}
+                to={`${match.url}/session`}
+                title={
+                  <>
+                    <span>เซสชั่น</span>
+                    <AlertLabel />
+                  </>
+                }
+              />
+            )}
+            {(!worker || role === 1 || role === 2) && (
+              <NavButton
+                icon={faUtensils}
+                to={`${match.url}/queue`}
+                title={
+                  <>
+                    <span>คิวการสั่งอาหาร</span>
+                    <FoodAlertLabel />
+                  </>
+                }
+              />
+            )}
+            {(!worker || role === 2) && (
+              <NavButton
+                icon={faFileAlt}
+                to={`${match.url}/report`}
+                title="รายงาน"
+              />
+            )}
+            {!worker && (
+              <NavButton
+                icon={faStore}
+                to={`/manager/list`}
+                title="เลือกร้านอาหาร"
+              />
+            )}
           </>
         }
       />
@@ -330,40 +360,93 @@ function SignInForm() {
   );
 }
 
-function PrivateRoute({ component: Component, ...rest }) {
+function PrivateRoute({ children: Component, ...rest }) {
+  const worker = useWorker();
+
+  if (worker)
+    return (
+      <Route {...rest}>
+        <ManagerControlPanel user={{ uid: "worker" }} />
+      </Route>
+    );
   return (
     <Route
       {...rest}
       render={() =>
-        Auth.currentUser ? <Component /> : <Redirect to={`/manager/sign-in`} />
+        Auth.currentUser ? Component : <Redirect to={`/manager/sign-in`} />
       }
-    />
+    ></Route>
   );
+}
+
+function WorkerOut() {
+  window.localStorage.removeItem("jwt");
+
+  window.location.href = "/manager";
+}
+
+function WorkerAuth() {
+  const { jwt } = useParams();
+  const storage = window.localStorage;
+  storage.setItem("jwt", jwt);
+
+  window.location.href = "/manager";
+}
+
+function useWorker() {
+  const { data, error } = useAsync({
+    promiseFn: apiFetcher,
+    url: `/manager/worker/check.php`,
+    option: {
+      headers: {
+        Accept: "application/json",
+        Authorization: "Bearer " + window.localStorage.getItem("jwt"),
+      },
+    },
+  });
+
+  if (!window.localStorage.getItem("jwt")) return null;
+  if (error) return error.message;
+  if (data?.message) {
+    switch (data.message) {
+      case "success":
+        return { ...data.result, role: parseInt(data.result.role) };
+      default:
+        window.localStorage.removeItem("jwt");
+        return data.message;
+    }
+  }
+  return "loading";
 }
 
 function Manager() {
   const [isSignedIn, setSignState] = useState(null);
   const match = useRouteMatch();
 
-  useEffect(() => Auth.onAuthStateChanged((user) => setSignState(user)));
+  useEffect(() => {
+    if (!window.localStorage.getItem("jwt"))
+      return Auth.onAuthStateChanged((user) => setSignState(user));
+  });
 
-  if (isSignedIn) {
-    return (
-      <Switch>
-        <Route
-          path={`${match.path}/sign-in`}
-          render={() =>
-            !isSignedIn ? <SignInForm /> : <Redirect to={`/manager`} />
-          }
-        />
-        <PrivateRoute path={`${match.path}`}>
-          <ManagerControlPanel user={isSignedIn} />
-        </PrivateRoute>
-      </Switch>
-    );
-  } else {
-    return "Loading";
-  }
+  return (
+    <Switch>
+      <Route path={`${match.path}/workerauth/:jwt`} component={WorkerAuth} />
+      <Route path={`${match.path}/workerout`} component={WorkerOut} />
+      <Route
+        path={`${match.path}/sign-in`}
+        render={() =>
+          !isSignedIn && !window.localStorage.getItem("jwt") ? (
+            <SignInForm />
+          ) : (
+            <Redirect to={`/manager`} />
+          )
+        }
+      />
+      <PrivateRoute path={`${match.path}`}>
+        <ManagerControlPanel user={isSignedIn} />
+      </PrivateRoute>
+    </Switch>
+  );
 }
 export default Manager;
-export { Socket };
+export { Socket, useWorker };

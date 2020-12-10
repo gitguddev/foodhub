@@ -7,17 +7,23 @@ const firebaseConfig = {
   authDomain: "foodhub-294508.firebaseapp.com",
 };
 
-firebase.initializeApp(firebaseConfig);
+let Auth, AuthUIConfig, AuthUI;
 
-const Auth = firebase.auth();
-const AuthUIConfig = {
-  signInOptions: [
-    firebase.auth.EmailAuthProvider.PROVIDER_ID,
-    firebase.auth.FacebookAuthProvider.PROVIDER_ID,
-    firebase.auth.TwitterAuthProvider.PROVIDER_ID,
-    firebase.auth.GithubAuthProvider.PROVIDER_ID,
-  ],
-};
-const AuthUI = new window.firebaseui.auth.AuthUI(Auth);
+if (!window.localStorage.getItem("jwt")) {
+  firebase.initializeApp(firebaseConfig);
+
+  Auth = firebase.auth();
+  AuthUIConfig = {
+    signInOptions: [
+      firebase.auth.EmailAuthProvider.PROVIDER_ID,
+      firebase.auth.FacebookAuthProvider.PROVIDER_ID,
+      firebase.auth.TwitterAuthProvider.PROVIDER_ID,
+      firebase.auth.GithubAuthProvider.PROVIDER_ID,
+    ],
+  };
+  AuthUI = new window.firebaseui.auth.AuthUI(Auth);
+} else {
+  Auth = { currentUser: { uid: "worker" } };
+}
 
 export { AuthUI, Auth, AuthUIConfig };

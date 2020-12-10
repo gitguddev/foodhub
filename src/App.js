@@ -2,7 +2,7 @@ import React, { Suspense } from "react";
 import "./App.css";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 
-import { Restaurant, Manager, Bill } from "./route/Route";
+import { Restaurant, Manager, Bill, Landing } from "./route/Route";
 import Auth from "./Auth";
 import Loader from "./utils/Loader";
 
@@ -23,7 +23,7 @@ function App() {
               <div>Getting Started</div>
             </Route>
             <Route path="/">
-              <div>Landing Page</div>
+              <Landing />
             </Route>
           </Switch>
         </Suspense>

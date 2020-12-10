@@ -1,5 +1,6 @@
 import React, { Suspense, useState } from "react";
 import ManagerStyle from "./Manager.module.css";
+import Avatar from "../../Avatar.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBars,
@@ -7,7 +8,8 @@ import {
   faSignOutAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import { Auth } from "../../utils/firebase";
-import { NavLink } from "react-router-dom";
+import { NavLink, useHistory } from "react-router-dom";
+import { useWorker } from "./Manager";
 
 function NavButton({ icon, title, to, exact, onClick }) {
   return (
@@ -26,11 +28,21 @@ function NavButton({ icon, title, to, exact, onClick }) {
 }
 
 function UserSection() {
-  const { displayName, photoURL } = Auth.currentUser;
+  const worker = useWorker();
+  let displayName, photoURL;
+
+  if (!window.localStorage.getItem("jwt")) {
+    let currentUser = Auth.currentUser;
+    displayName = currentUser?.displayName || null;
+    photoURL = currentUser?.photoURL ? currentUser?.photoURL : Avatar;
+  } else {
+    displayName = worker.name || null;
+    photoURL = worker.img || Avatar;
+  }
 
   return (
     <div className={ManagerStyle.userSection}>
-      <img src={photoURL} />
+      <img src={photoURL} alt="user" />
       {displayName}
     </div>
   );
@@ -64,8 +76,16 @@ function ManagerShell({ rightTitle, title, content, panel }) {
 }
 
 function Panel({ setShow, show, menu }) {
+  const history = useHistory();
+
   function togglePanel() {
     setShow(false);
+  }
+
+  function WorkerSignOut() {
+    window.localStorage.removeItem("jwt");
+    history.push("/");
+    window.location.reload();
   }
 
   return (
@@ -81,7 +101,11 @@ function Panel({ setShow, show, menu }) {
       {menu}
       <div
         className={ManagerStyle.navmenuButton}
-        onClick={() => Auth.signOut()}
+        onClick={
+          window.localStorage.getItem("jwt")
+            ? WorkerSignOut
+            : () => Auth.signOut()
+        }
       >
         <FontAwesomeIcon icon={faSignOutAlt} /> ออกจากระบบ
       </div>

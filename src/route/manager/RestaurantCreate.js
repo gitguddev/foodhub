@@ -23,9 +23,9 @@ function RestaurantCreate() {
     event.preventDefault();
 
     const formData = new FormData();
-    if (imageRef.current.files?.length > 0) {
+    console.log({ image: imageRef.current.files });
+    if (imageRef.current.files?.length > 0)
       formData.append("image", imageRef.current.files[0]);
-    }
 
     const json = await apiFetcher({
       url: `/manager/restaurant/insert.php?name=${restaurantName}&user_uid=${Auth.currentUser.uid}&info=${description}`,
@@ -45,7 +45,12 @@ function RestaurantCreate() {
         <b>สร้างร้านอาหาร</b>
       </big>
       <small>
-        <form className={ManagerStyle.form} onSubmit={handleCreation}>
+        <form
+          className={ManagerStyle.form}
+          onSubmit={handleCreation}
+          method="POST"
+          encType="multipart/form-data"
+        >
           ชื่อร้านอาหาร
           <input
             type="text"

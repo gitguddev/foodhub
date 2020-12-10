@@ -8,7 +8,6 @@ import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import ManagerStyle from "./Manager.module.css";
 import numeral from "numeral";
 import {
-  faBars,
   faEllipsisV,
   faPencilAlt,
   faTimes,
@@ -274,6 +273,7 @@ function FoodEdit() {
   const history = useHistory();
   const [foodName, foodNameSet] = useState("");
   const [price, priceSet] = useState("");
+  const [cost, costSet] = useState("");
   const [info, infoSet] = useState("");
   const [status, statusSet] = useState();
 
@@ -283,6 +283,7 @@ function FoodEdit() {
     onResolve({ result }) {
       foodNameSet(result.name);
       priceSet(result.price);
+      costSet(result.cost);
       infoSet(result.info);
     },
   });
@@ -303,6 +304,10 @@ function FoodEdit() {
     handleChange(target, infoSet);
   }
 
+  function handleCostChange({ target }) {
+    handleChange(target, costSet);
+  }
+
   function handleImage({ target }) {
     const reader = new FileReader();
 
@@ -317,12 +322,16 @@ function FoodEdit() {
   async function handleSubmit(event) {
     event.preventDefault();
 
+    if (parseFloat(price) < parseFloat(cost)) {
+      return alert("ราคากำไรต้องไม่น้อยกว่าราคาขาย");
+    }
+
     const formData = new FormData();
     if (fileRef.current.files?.length > 0)
       formData.append("image", fileRef.current.files[0]);
 
     const json = await apiFetcher({
-      url: `/manager/food/update.php?id=${food_id}&name=${foodName}&category_id=${category_id}&price=${price}&user_uid=${Auth.currentUser.uid}&restaurant_id=${restaurant_id}&info=${info}`,
+      url: `/manager/food/update.php?id=${food_id}&name=${foodName}&category_id=${category_id}&price=${price}&user_uid=${Auth.currentUser.uid}&restaurant_id=${restaurant_id}&info=${info}&cost=${cost}`,
       option: {
         method: "POST",
         body: formData,
@@ -351,15 +360,25 @@ function FoodEdit() {
           type="text"
           required
         />
-        <span>ราคา</span>
+        <span>ราคาต้นทุน</span>
         <input
-          placeholder="ราคา"
+          placeholder="ราคาต้นทุน"
+          value={cost}
+          onChange={handleCostChange}
+          type="text"
+          required={true}
+          pattern="^(?=(\D*\d\D*){0,9}$)-?\d*(\.\d{0,2})?$"
+          title="เฉพาะตัวเลขทศนิยมสองหลักเท่านั้น"
+        />
+        <span>ราคาขาย</span>
+        <input
+          placeholder="ราคาขาย"
           value={price}
           onChange={handlePriceChange}
           type="text"
           required={true}
-          pattern="\d*"
-          title="เฉพาะตัวเลข 0-9 เท่านั้น"
+          pattern="^(?=(\D*\d\D*){0,9}$)-?\d*(\.\d{0,2})?$"
+          title="เฉพาะตัวเลขทศนิยมสองหลักเท่านั้น"
         />
         <span>คำอธิบายอาหาร</span>
         <textarea
@@ -381,7 +400,7 @@ function FoodEdit() {
         </label>
         <br />
         {status}
-        <input type="submit" value="เพิ่มอาหาร" />
+        <input type="submit" value="อัพเดธข้อมูล" />
       </form>
     );
   return "Loading";
@@ -441,7 +460,7 @@ function FoodListContainer() {
             .filter((filter) =>
               !search
                 ? true
-                : filter.name.toLowerCase().search(search) === -1
+                : filter.name.toLowerCase().search(search.toLowerCase()) === -1
                 ? false
                 : true
             )
@@ -486,6 +505,7 @@ function FoodAdd() {
   const history = useHistory();
   const [foodName, foodNameSet] = useState("");
   const [price, priceSet] = useState("");
+  const [cost, costSet] = useState("");
   const [info, infoSet] = useState("");
   const [status, statusSet] = useState();
 
@@ -499,6 +519,10 @@ function FoodAdd() {
 
   function handlePriceChange({ target }) {
     handleChange(target, priceSet);
+  }
+
+  function handleCostChange({ target }) {
+    handleChange(target, costSet);
   }
 
   function handleInfoChange({ target }) {
@@ -519,12 +543,15 @@ function FoodAdd() {
   async function handleSubmit(event) {
     event.preventDefault();
 
+    if (parseFloat(price) < parseFloat(cost))
+      return alert("ราคาต้นทุนต้องไม่น้อยกว่าราคาขาย");
+
     const formData = new FormData();
     if (fileRef.current.files?.length > 0)
       formData.append("image", fileRef.current.files[0]);
 
     const json = await apiFetcher({
-      url: `/manager/food/insert.php?name=${foodName}&category_id=${category_id}&price=${price}&user_uid=${Auth.currentUser.uid}&restaurant_id=${restaurant_id}&info=${info}`,
+      url: `/manager/food/insert.php?name=${foodName}&category_id=${category_id}&price=${price}&user_uid=${Auth.currentUser.uid}&restaurant_id=${restaurant_id}&info=${info}&cost=${cost}`,
       option: {
         method: "POST",
         body: formData,
@@ -551,15 +578,25 @@ function FoodAdd() {
         type="text"
         required
       />
-      <span>ราคา</span>
+      <span>ราคาต้นทุน</span>
+      <input
+        placeholder="ราคาต้นทุน"
+        value={cost}
+        onChange={handleCostChange}
+        type="text"
+        required={true}
+          pattern="^(?=(\D*\d\D*){0,9}$)-?\d*(\.\d{0,2})?$"
+          title="เฉพาะตัวเลขทศนิยมสองหลักเท่านั้น"
+      />
+      <span>ราคาขาย</span>
       <input
         placeholder="ราคา"
         value={price}
         onChange={handlePriceChange}
         type="text"
         required={true}
-        pattern="\d*"
-        title="เฉพาะตัวเลข 0-9 เท่านั้น"
+          pattern="^(?=(\D*\d\D*){0,9}$)-?\d*(\.\d{0,2})?$"
+          title="เฉพาะตัวเลขทศนิยมสองหลักเท่านั้น"
       />
       <span>คำอธิบายอาหาร</span>
       <textarea

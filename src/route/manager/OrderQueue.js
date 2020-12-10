@@ -2,7 +2,6 @@ import React, { useContext, useEffect } from "react";
 import { useAsync } from "react-async";
 import apiFetcher from "../../utils/apiFetcher";
 import { Auth } from "../../utils/firebase";
-import { useOrder } from "../../utils/socket.io";
 import { useParams } from "react-router-dom";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -16,10 +15,16 @@ const statusMessage = [
   "ยกเลิกแล้ว",
 ];
 
+const OrderTableContainer = styled.div`
+  overflow: hidden;
+  border-radius: 5px;
+  border: 1px solid #232323;
+`;
+
 const OrderTable = styled.table`
+  width: 100%;
   border-collapse: collapse;
   font-size: 0.85em;
-  border: 1px solid #232323;
   border-radius: 3px;
   box-sizing: border-box;
 
@@ -86,7 +91,12 @@ function OrderQueue() {
     socket.on("cancel", reload);
     socket.on("order", reload);
     socket.on("update", reload);
-  });
+    return () => {
+      socket.off("order");
+      socket.off("cancel");
+      socket.off("update");
+    };
+  }, [restaurant_id, socket, reload]);
 
   async function handleCancel(id) {
     const json = await apiFetcher({
@@ -121,55 +131,57 @@ function OrderQueue() {
         : [];
 
     return (
-      <OrderTable>
-        <thead>
-          <tr>
-            <th className="imageCell">รูปอาหาร</th>
-            <th>ชื่ออาหาร</th>
-            <th>จำนวน</th>
-            <th>โต๊ะ</th>
-            <th>หมายเหตุ</th>
-            <th>สถานะ</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredData.length > 0 ? (
-            filteredData.map((map, index) => (
-              <tr key={map.id}>
-                <td className="imageCell">
-                  <img className="foodImage" src={map.img} alt="food" />
-                </td>
-                <td>{map.name}</td>
-                <td>{map.quantity}</td>
-                <td>{map.restaurant_number}</td>
-                <td>{map.note || "-"}</td>
-                <td>
-                  <span>{statusMessage[map.status]}</span>
-                  <div className="statusOperator">
-                    {map.status >= 0 && map.status < 2 && (
-                      <OperateButton
-                        icon={faCheck}
-                        onClick={() => handleUpdate(map.id)}
-                      />
-                    )}
-                    {map.status <= 0 && (
-                      <OperateButton
-                        icon={faTimes}
-                        onClick={() => handleCancel(map.id)}
-                        danger="true"
-                      />
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))
-          ) : (
+      <OrderTableContainer>
+        <OrderTable>
+          <thead>
             <tr>
-              <td colSpan={6}>ไม่มีคำสั่งซื้อในขณะนี้</td>
+              <th className="imageCell">รูปอาหาร</th>
+              <th>ชื่ออาหาร</th>
+              <th>จำนวน</th>
+              <th>โต๊ะ</th>
+              <th>หมายเหตุ</th>
+              <th>สถานะ</th>
             </tr>
-          )}
-        </tbody>
-      </OrderTable>
+          </thead>
+          <tbody>
+            {filteredData.length > 0 ? (
+              filteredData.map((map, index) => (
+                <tr key={map.id}>
+                  <td className="imageCell">
+                    <img className="foodImage" src={map.img} alt="food" />
+                  </td>
+                  <td>{map.name}</td>
+                  <td>{map.quantity}</td>
+                  <td>{map.restaurant_number}</td>
+                  <td>{map.note || "-"}</td>
+                  <td>
+                    <span>{statusMessage[map.status]}</span>
+                    <div className="statusOperator">
+                      {map.status >= 0 && map.status < 2 && (
+                        <OperateButton
+                          icon={faCheck}
+                          onClick={() => handleUpdate(map.id)}
+                        />
+                      )}
+                      {map.status <= 0 && (
+                        <OperateButton
+                          icon={faTimes}
+                          onClick={() => handleCancel(map.id)}
+                          danger="true"
+                        />
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={6}>ไม่มีคำสั่งซื้อในขณะนี้</td>
+              </tr>
+            )}
+          </tbody>
+        </OrderTable>
+      </OrderTableContainer>
     );
   }
   return "Loading";

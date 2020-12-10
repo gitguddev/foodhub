@@ -3,9 +3,8 @@ import apiFetcher, { authedFetcher } from "./utils/apiFetcher";
 import { useParams, Redirect, useHistory } from "react-router-dom";
 import { useAsync } from "react-async";
 
-const storage = window.localStorage;
-
 async function Auther({ restaurant_id, table_number, history }) {
+  const storage = window.localStorage;
   if (storage.getItem("auth")) {
     const json = await authedFetcher({
       url: `/manager/checkAuth.php?restaurant_id=${restaurant_id}&table_number=${table_number}`,
@@ -33,10 +32,12 @@ async function Auther({ restaurant_id, table_number, history }) {
   } else {
     const json = await apiFetcher({
       url: `/manager/auth.php?restaurant_id=${restaurant_id}&table_number=${table_number}`,
+      restaurant: true,
     });
 
     switch (json.message) {
       case "success":
+        console.log("success");
         storage.setItem("auth", json.result);
         return {
           message: "success",

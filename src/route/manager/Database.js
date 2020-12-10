@@ -1,9 +1,13 @@
 import React from "react";
 import ManagerStyle from "./Manager.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHamburger, faStore } from "@fortawesome/free-solid-svg-icons";
+import {
+  faHamburger,
+  faStore,
+  faUserTie,
+} from "@fortawesome/free-solid-svg-icons";
 import { Link, useRouteMatch, Switch, Route } from "react-router-dom";
-import { RestaurantManage, FoodManage } from "./ManagerRoute";
+import { RestaurantManage, FoodManage, WorkerManage } from "./ManagerRoute";
 
 function Menu() {
   const match = useRouteMatch();
@@ -30,6 +34,16 @@ function Menu() {
           เพิ่ม ลบ และแก้ไขข้อมูลอาหารภายในร้าน
         </span>
       </Link>
+      <Link to={`${match.url}/worker`}>
+        <big className={ManagerStyle.title}>
+          <FontAwesomeIcon icon={faUserTie} />
+          พนักงาน
+        </big>
+        <br />
+        <span className={ManagerStyle.description}>
+          เพิ่ม ลบ และแก้ไขข้อมูลพนักงานภายในร้าน
+        </span>
+      </Link>
     </div>
   );
 }
@@ -45,6 +59,7 @@ function Database() {
       />
       <Route path={`${match.path}/restaurant`} component={RestaurantManage} />
       <Route path={`${match.path}/food`} component={FoodManage} />
+      <Route path={`${match.path}/worker`} component={WorkerManage} />
       <Route path={`${match.path}`} component={Menu} />
     </Switch>
   );

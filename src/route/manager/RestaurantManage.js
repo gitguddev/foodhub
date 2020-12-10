@@ -9,6 +9,7 @@ import { PDFDocument, rgb } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faQrcode } from "@fortawesome/free-solid-svg-icons";
+import { SERVER_ADDRESS } from "../../utils/config";
 
 async function QRCodePrint(restaurant_id, table_quantity) {
   const pdf = await PDFDocument.create();
@@ -44,7 +45,7 @@ async function QRCodePrint(restaurant_id, table_quantity) {
     const currentPage = pdf.addPage();
     const { height, width } = currentPage.getSize();
     const url = await QRCode.toDataURL(
-      `http://192.168.250.72:3000/restaurant/auth/${restaurant_id}/${i}`,
+      `http://${SERVER_ADDRESS}:3000/restaurant/auth/${restaurant_id}/${i}`,
       {
         width: width / 2,
       }

@@ -116,7 +116,7 @@ const BillButton = styled.button`
   }
 `;
 
-function Bill({ sessionId, reloader, status }) {
+function Bill({ sessionId, reloader, status, table_number }) {
   const { restaurant_id } = useParams();
   const { socket, connected } = useContext(Socket);
   const { data, error, reload } = useAsync({
@@ -128,7 +128,12 @@ function Bill({ sessionId, reloader, status }) {
     socket.on("order", reload);
     socket.on("cancel", reload);
     socket.on("update", reload);
-  });
+    return () => {
+      socket.off("order");
+      socket.off("cancel");
+      socket.off("update");
+    };
+  }, [reload, restaurant_id, socket]);
 
   async function cancelBill(id) {
     const json = await apiFetcher({
@@ -150,7 +155,7 @@ function Bill({ sessionId, reloader, status }) {
 
     if (json.message === "success") {
       reloader();
-      socket.emit("completeBill", restaurant_id);
+      socket.emit("completeBill", restaurant_id, table_number);
     } else {
       console.error(json.message);
     }
@@ -216,9 +221,27 @@ function Bill({ sessionId, reloader, status }) {
   return <Loader />;
 }
 
+const ConfirmBT = styled.button`
+  border: none;
+  padding: 5px 10px;
+  border-radius: 3px;
+  color: white;
+  margin-top: 10px;
+
+  background-color: ${(props) => (props.danger ? "red" : "blue")};
+  transition: all 0.2s;
+
+  &:hover {
+    background-color: ${(props) => (props.danger ? "#940100" : "#00007b")};
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+`;
+
 function SessionTable({ data, reloader }) {
   const [time, timeSet] = useState(new Date());
   const [clicked, clickedSet] = useState(false);
+  const { restaurant_id } = useParams();
 
   useEffect(() => {
     const timer = setTimeout(() => timeSet(new Date()), 1000);
@@ -249,34 +272,79 @@ function SessionTable({ data, reloader }) {
     clickedSet(clicked === table_number ? null : table_number);
   }
 
+  async function sessionsAccept(id) {
+    const json = await apiFetcher({
+      url: `/manager/session/operation.php?method=accept&id=${id}&restaurant_id=${restaurant_id}&user_uid=${Auth.currentUser.uid}`,
+    });
+
+    if (json?.message === "success") {
+      reloader();
+    } else {
+      console.error(json?.message);
+    }
+  }
+
+  async function sessionsDelete(id) {
+    const json = await apiFetcher({
+      url: `/manager/session/operation.php?method=delete&id=${id}&restaurant_id=${restaurant_id}&user_uid=${Auth.currentUser.uid}`,
+    });
+
+    if (json?.message === "success") {
+      reloader();
+    } else {
+      console.error(json?.message);
+    }
+  }
+
   if (data === null) return <span>ไม่มีลูกค้าอยู่ในร้านขณะนี้</span>;
 
   const tableList = data.map((map) => (
     <SessionBox
       key={map.id}
       status={map.status}
-      onClick={() => handleClick(map.table_number)}
+      onClick={
+        parseInt(map.confirm) === 1 ? () => handleClick(map.table_number) : null
+      }
     >
       <b>โต๊ะที่ {map.table_number}</b>
-      <span>จำนวนอาหารที่สั่ง {map.total_order}</span>
-      <span>รวมสุทธิ {numeral(map.total || 0).format("0,0.00")}</span>
-      <span>
-        ระยะเวลา <TimePassed data={map} />
-      </span>
-      {parseInt(map.status) === 1 && (
-        <span
-          style={{
-            fontSize: "1.2em",
-            marginTop: 15,
-            fontWeight: "bold",
-            color: "red",
-          }}
-        >
-          มีคำเรียกขอเก็บเงิน
-        </span>
+      {parseInt(map.confirm) === 1 && (
+        <>
+          <span>จำนวนอาหารที่สั่ง {map.total_order}</span>
+          <span>รวมสุทธิ {numeral(map.total || 0).format("0,0.00")}</span>
+          <span>
+            ระยะเวลา <TimePassed data={map} />
+          </span>
+        </>
+      )}
+      {parseInt(map.confirm) === 0 ? (
+        <>
+          <span>กำลังรอการยืนยัน</span>
+          <ConfirmBT onClick={() => sessionsAccept(map.id)}>ยืนยัน</ConfirmBT>
+          <ConfirmBT onClick={() => sessionsDelete(map.id)} danger>
+            ยกเลิก
+          </ConfirmBT>
+        </>
+      ) : (
+        parseInt(map.status) === 1 && (
+          <span
+            style={{
+              fontSize: "1.2em",
+              marginTop: 15,
+              fontWeight: "bold",
+              color: "red",
+            }}
+          >
+            มีคำเรียกขอเก็บเงิน
+          </span>
+        )
       )}
       {clicked === map.table_number && (
-        <Bill sessionId={map.id} reloader={reloader} status={map.status} />
+        <Bill
+          sessionId={map.id}
+          reloader={reloader}
+          status={map.status}
+          table_number={map.table_number}
+        />
       )}
     </SessionBox>
   ));
@@ -292,6 +360,8 @@ function Session() {
   });
 
   const { socket, connected } = useContext(Socket);
+
+  console.log(data);
 
   function Fetcher() {
     const timer = setInterval(reload, 1000);

@@ -4,12 +4,22 @@ import { SERVER_ADDRESS } from "./config";
 
 const SERVER = "http://" + SERVER_ADDRESS;
 
-function apiFetcher({ url, option }) {
+function apiFetcher({ url, option, restaurant }) {
   const API = `${SERVER}/~littleboycoding/foodhub_api`;
+  // const mode = window.localStorage.getItem("jwt") ? "worker" : "manager";
+
+  let opt = { ...option };
+  if (window.localStorage.getItem("jwt") && !restaurant) {
+    if (!opt.headers) opt.headers = {};
+    if (!opt.headers.Authorization)
+      opt.headers.Authorization =
+        "Bearer " + window.localStorage.getItem("jwt");
+  }
 
   return fetch(`${API}${url}`, {
     headers: { Accept: "application/json" },
-    ...option,
+    mode: "cors",
+    ...opt,
   })
     .then((res) => res.json())
     .catch((err) => ({ message: err }));
@@ -18,6 +28,7 @@ function apiFetcher({ url, option }) {
 function authedFetcher({ url, option }) {
   return apiFetcher({
     url,
+    restaurant: true,
     option: {
       headers: {
         Authorization: "Bearer " + window.localStorage.getItem("auth"),
