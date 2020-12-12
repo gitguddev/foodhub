@@ -361,8 +361,6 @@ function Session() {
 
   const { socket, connected } = useContext(Socket);
 
-  console.log(data);
-
   function Fetcher() {
     const timer = setInterval(reload, 1000);
     socket.on("checkBillPage", () => {

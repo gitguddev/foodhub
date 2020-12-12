@@ -4,7 +4,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import checkBillSfx from "../../checkBill.mp3";
 import deskBellSfx from "../../deskBell.mp3";
 import {
-  faHome,
   faDatabase,
   faFileAlt,
   faUtensils,
@@ -19,7 +18,6 @@ import {
   Redirect,
   Link,
   useParams,
-  useHistory,
 } from "react-router-dom";
 import Icon from "./icon.png";
 import ManagerShell, { NavButton } from "./ManagerShell";
@@ -161,6 +159,28 @@ const AlertLabelStyled = styled.div`
 const audio = new Audio(checkBillSfx);
 const deskBell = new Audio(deskBellSfx);
 
+function unlockAudio([firstAudio, secondAudio]) {
+  firstAudio.play();
+  firstAudio.pause();
+  firstAudio.currentTime = 0;
+
+  secondAudio.play();
+  secondAudio.pause();
+  secondAudio.currentTime = 0;
+
+  document.body.removeEventListener("click", () =>
+    unlockAudio([audio, deskBell])
+  );
+  document.body.removeEventListener("touchstart", () =>
+    unlockAudio([audio, deskBell])
+  );
+}
+
+document.body.addEventListener("click", () => unlockAudio([audio, deskBell]));
+document.body.addEventListener("touchstart", () =>
+  unlockAudio([audio, deskBell])
+);
+
 function FoodAlertLabel() {
   const { restaurant_id } = useParams();
   const { socket } = useContext(Socket);
@@ -175,11 +195,7 @@ function FoodAlertLabel() {
   function ReFetcher() {
     function Reloader(play) {
       if (play) {
-        try {
-          deskBell.play();
-        } catch (error) {
-          throw new Error(error);
-        }
+        deskBell.play();
       }
       reload();
     }
@@ -255,6 +271,7 @@ function RestaurantRoute() {
   }, [match, restaurant_id, socket]);
 
   if (worker === "loading") return <Loader />;
+
   return (
     <>
       <ManagerShell
@@ -264,21 +281,32 @@ function RestaurantRoute() {
             <Route path={`${match.path}/session`}>เซสชั่น</Route>
             <Route path={`${match.path}/report`}>รายงาน</Route>
             <Route path={`${match.path}/queue`}>คิวการสั่งอาหาร</Route>
-            <Route path={match.path}>หน้าแรก</Route>
+            {/* <Route path={match.path}>หน้าแรก</Route> */}
           </Switch>
         }
         content={
           <Switch>
-            <Route path={`${match.path}/database`} component={Database} />
-            <Route path={`${match.path}/session`} component={Session} />
-            <Route path={`${match.path}/report`} component={Report} />
-            <Route path={`${match.path}/queue`} component={OrderQueue} />
-            <Route path={match.path} component={() => "หน้าแรก"} />
+            {(!worker || role === 2) && (
+              <Route path={`${match.path}/database`} component={Database} />
+            )}
+            {(!worker || role === 2 || role === 0) && (
+              <Route path={`${match.path}/session`} component={Session} />
+            )}
+            {(!worker || role === 2) && (
+              <Route path={`${match.path}/report`} component={Report} />
+            )}
+            {(!worker || role === 2 || role === 1) && (
+              <Route path={`${match.path}/queue`} component={OrderQueue} />
+            )}
+            {!worker && <Redirect to={`${match.path}/report`} />}
+            {role === 0 && <Redirect to={`${match.path}/session`} />}
+            {role === 1 && <Redirect to={`${match.path}/queue`} />}
+            {role === 2 && <Redirect to={`${match.path}/database`} />}
           </Switch>
         }
         panel={
           <>
-            <NavButton icon={faHome} to={match.url} exact title="หน้าแรก" />
+            {/* <NavButton icon={faHome} to={match.url} exact title="หน้าแรก" /> */}
             {(!worker || role === 2) && (
               <NavButton
                 icon={faDatabase}

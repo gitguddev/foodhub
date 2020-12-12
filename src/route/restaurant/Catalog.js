@@ -148,6 +148,7 @@ const QuantityInputStyled = styled.input.attrs((props) => ({
   min: 0,
   max: 99,
   required: true,
+  title: "ใส่ได้เฉพาะตัวเลขเท่านั้น",
   placeholder: "จำนวน",
 }))`
   padding: 6px;
@@ -243,7 +244,13 @@ function FoodInfo({ data, handleClose }) {
   }
 
   function handleQuantityChange(event) {
-    quantitySet(event.target.value);
+    // const value = parseInt(event.target.value) || "";
+
+    // if (value < 0 || value > 99) return;
+
+    // console.log(!connected && (quantity === 0 || quantity > 99));
+
+    quantitySet(parseInt(event.target.value));
   }
 
   function handleNoteChange(event) {
@@ -266,11 +273,15 @@ function FoodInfo({ data, handleClose }) {
             <QuantityInputStyled
               onChange={handleQuantityChange}
               value={quantity}
+              required={true}
             />
             หมายเหตุ
             <NoteInputStyled onChange={handleNoteChange} value={note} />
           </div>
-          <OrderButtonStyled onClick={handleOrder} disabled={!connected}>
+          <OrderButtonStyled
+            onClick={handleOrder}
+            disabled={!connected || !(quantity > 0 && quantity < 100)}
+          >
             {" "}
             สั่งอาหาร <FontAwesomeIcon icon={faShoppingCart} />
           </OrderButtonStyled>

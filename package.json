@@ -17,6 +17,7 @@
     "jsonwebtoken": "^8.5.1",
     "numeral": "^2.0.6",
     "pdf-lib": "^1.11.2",
+    "qr-scanner": "^1.2.0",
     "qrcode": "^1.4.4",
     "react": "^16.14.0",
     "react-async": "^10.0.1",
@@ -30,10 +31,13 @@
     "styled-components": "^5.2.1"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "httpstart": "react-scripts start",
+    "start": "HTTPS=true react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "httphost": "serve -s build/",
+    "host": "serve -s --ssl-cert /etc/ssl/certs/localhost.crt --ssl-key /etc/ssl/private/localhost.key build/"
   },
   "eslintConfig": {
     "extends": "react-app"

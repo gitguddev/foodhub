@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import io from "socket.io-client";
-import { SERVER_ADDRESS } from "./config";
+import { SERVER_ADDRESS, PROTOCOL } from "./config";
 
-const SOCKET_ADDRESS = `ws://${SERVER_ADDRESS}:5000`;
+const SOCKET_ADDRESS = `${PROTOCOL}://${SERVER_ADDRESS}:5000`;
 
 function createSocket(currentUser) {
   let socket;

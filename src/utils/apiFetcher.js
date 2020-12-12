@@ -1,8 +1,8 @@
 import { useAsync } from "react-async";
 import { useHistory } from "react-router-dom";
-import { SERVER_ADDRESS } from "./config";
+import { SERVER_ADDRESS, PROTOCOL } from "./config";
 
-const SERVER = "http://" + SERVER_ADDRESS;
+const SERVER = `${PROTOCOL}://${SERVER_ADDRESS}`;
 
 function apiFetcher({ url, option, restaurant }) {
   const API = `${SERVER}/~littleboycoding/foodhub_api`;

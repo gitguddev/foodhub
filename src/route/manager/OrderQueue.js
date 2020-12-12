@@ -16,7 +16,8 @@ const statusMessage = [
 ];
 
 const OrderTableContainer = styled.div`
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   border-radius: 5px;
   border: 1px solid #232323;
 `;
