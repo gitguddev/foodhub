@@ -9,7 +9,7 @@ import Loader from "./utils/Loader";
 function App() {
   return (
     <div className="App">
-      <Router>
+      <Router basename={process.env.PUBLIC_URL}>
         <Suspense fallback={<Loader />}>
           <Switch>
             <Route path="/manager" component={Manager} />

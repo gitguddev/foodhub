@@ -2,6 +2,7 @@
   "name": "foodhub",
   "version": "0.1.0",
   "private": true,
+  "homepage": "/",
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.32",
     "@fortawesome/free-solid-svg-icons": "^5.15.1",
@@ -36,8 +37,9 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "httphost": "serve -s build/",
-    "host": "serve -s --ssl-cert /etc/ssl/certs/localhost.crt --ssl-key /etc/ssl/private/localhost.key build/"
+    "httpserve": "serve -l 5050 -s build/",
+    "serve": "serve -l 5050 -s --ssl-cert /etc/ssl/certs/localhost.pem --ssl-key /etc/ssl/private/localhost.key build/",
+    "deploy": "cp -r build/* ~/public_html/foodhub/"
   },
   "eslintConfig": {
     "extends": "react-app"

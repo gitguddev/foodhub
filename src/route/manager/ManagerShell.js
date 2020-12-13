@@ -33,10 +33,10 @@ function UserSection() {
 
   if (!window.localStorage.getItem("jwt")) {
     let currentUser = Auth.currentUser;
-    displayName = currentUser?.displayName || null;
+    displayName = currentUser?.displayName || "ผู้ใช้งาน";
     photoURL = currentUser?.photoURL ? currentUser?.photoURL : Avatar;
   } else {
-    displayName = worker.name || null;
+    displayName = worker.name || "ผู้ใช้งาน";
     photoURL = worker.img || Avatar;
   }
 

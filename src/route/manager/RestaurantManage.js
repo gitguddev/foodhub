@@ -9,7 +9,7 @@ import { PDFDocument, rgb } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faQrcode } from "@fortawesome/free-solid-svg-icons";
-import { PROTOCOL, SERVER_ADDRESS } from "../../utils/config";
+import { PORT, PROTOCOL, SERVER_ADDRESS } from "../../utils/config";
 
 async function QRCodePrint(restaurant_id, table_quantity) {
   const pdf = await PDFDocument.create();
@@ -45,7 +45,7 @@ async function QRCodePrint(restaurant_id, table_quantity) {
     const currentPage = pdf.addPage();
     const { height, width } = currentPage.getSize();
     const url = await QRCode.toDataURL(
-      `${PROTOCOL}://${SERVER_ADDRESS}:3000/restaurant/auth/${restaurant_id}/${i}`,
+      `${PROTOCOL}://${SERVER_ADDRESS}:${PORT}/restaurant/auth/${restaurant_id}/${i}`,
       {
         width: width / 2,
       }
@@ -107,7 +107,6 @@ function RestaurantManage() {
     promiseFn: apiFetcher,
     url: `/manager/restaurant/get.php?id=${param.restaurant_id}&user_uid=${Auth.currentUser.uid}`,
     onResolve({ result }) {
-      console.log(result);
       restaurantNameUpdate(result.name);
       descriptionUpdate(result.info);
       tableQuantityUpdate(result.table_quantity);
@@ -219,9 +218,7 @@ function RestaurantManage() {
             />{" "}
             <button
               type="button"
-              onClick={() =>
-                QRCodePrint(param.restaurant_id, data.result.table_quantity)
-              }
+              onClick={() => QRCodePrint(param.restaurant_id, tableQuantity)}
             >
               <FontAwesomeIcon icon={faQrcode} /> ปริ้น QR Code
             </button>

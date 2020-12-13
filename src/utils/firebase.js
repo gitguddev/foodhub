@@ -19,6 +19,7 @@ if (!window.localStorage.getItem("jwt")) {
       firebase.auth.FacebookAuthProvider.PROVIDER_ID,
       firebase.auth.TwitterAuthProvider.PROVIDER_ID,
       firebase.auth.GithubAuthProvider.PROVIDER_ID,
+      firebase.auth.PhoneAuthProvider.PROVIDER_ID,
     ],
   };
   AuthUI = new window.firebaseui.auth.AuthUI(Auth);

@@ -322,9 +322,12 @@ function FoodEdit() {
   async function handleSubmit(event) {
     event.preventDefault();
 
-    if (parseFloat(price) < parseFloat(cost)) {
-      return alert("ราคากำไรต้องไม่น้อยกว่าราคาขาย");
-    }
+    if (
+      parseFloat(price) <= parseFloat(cost) ||
+      parseFloat(price) <= 0 ||
+      parseFloat(cost) <= 0
+    )
+      return alert("ราคากำไรต้องไม่น้อยกว่าราคาขาย และต้องมากกว่า 0");
 
     const formData = new FormData();
     if (fileRef.current.files?.length > 0)
@@ -543,8 +546,12 @@ function FoodAdd() {
   async function handleSubmit(event) {
     event.preventDefault();
 
-    if (parseFloat(price) < parseFloat(cost))
-      return alert("ราคาต้นทุนต้องไม่น้อยกว่าราคาขาย");
+    if (
+      parseFloat(price) <= parseFloat(cost) ||
+      parseFloat(price) <= 0 ||
+      parseFloat(cost) <= 0
+    )
+      return alert("ราคากำไรต้องไม่น้อยกว่าราคาขาย และต้องมากกว่า 0");
 
     const formData = new FormData();
     if (fileRef.current.files?.length > 0)
@@ -585,8 +592,8 @@ function FoodAdd() {
         onChange={handleCostChange}
         type="text"
         required={true}
-          pattern="^(?=(\D*\d\D*){0,9}$)-?\d*(\.\d{0,2})?$"
-          title="เฉพาะตัวเลขทศนิยมสองหลักเท่านั้น"
+        pattern="^(?=(\D*\d\D*){0,9}$)-?\d*(\.\d{0,2})?$"
+        title="เฉพาะตัวเลขทศนิยมสองหลักเท่านั้น"
       />
       <span>ราคาขาย</span>
       <input
@@ -595,8 +602,8 @@ function FoodAdd() {
         onChange={handlePriceChange}
         type="text"
         required={true}
-          pattern="^(?=(\D*\d\D*){0,9}$)-?\d*(\.\d{0,2})?$"
-          title="เฉพาะตัวเลขทศนิยมสองหลักเท่านั้น"
+        pattern="^(?=(\D*\d\D*){0,9}$)-?\d*(\.\d{0,2})?$"
+        title="เฉพาะตัวเลขทศนิยมสองหลักเท่านั้น"
       />
       <span>คำอธิบายอาหาร</span>
       <textarea
