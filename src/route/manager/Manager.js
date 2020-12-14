@@ -44,6 +44,8 @@ import styled from "styled-components";
 
 import { useAsync } from "react-async";
 
+import { SERVER_ADDRESS, PROTOCOL } from "../../utils/config";
+
 // import RestaurantSelector from "./RestaurantSelect";
 
 const Socket = createContext();
@@ -410,7 +412,7 @@ function PrivateRoute({ children: Component, ...rest }) {
 function WorkerOut() {
   window.localStorage.removeItem("jwt");
 
-  window.location.href = "/manager";
+  window.location.href = PROTOCOL + "://" + SERVER_ADDRESS + "/manager";
 }
 
 function WorkerAuth() {
@@ -418,7 +420,7 @@ function WorkerAuth() {
   const storage = window.localStorage;
   storage.setItem("jwt", jwt);
 
-  window.location.href = "/manager";
+  window.location.href = PROTOCOL + "://" + SERVER_ADDRESS + "/manager";
 }
 
 function useWorker() {

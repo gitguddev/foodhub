@@ -1,24 +1,34 @@
-// const SERVER_ADDRESS = "35.247.129.108/foodhub_app";
-// const PROTOCOL = "http";
-// const PORT = process.env.NODE_ENV === "production" ? 80 : 3000;
+let SERVER_ADDRESS = "localhost";
+let PROTOCOL = "http";
 
-// const API_ADDRESS = "35.247.129.108/foodhub_api";
-// const API_PROTOCOL = "http";
+let API_ADDRESS = "localhost/foodhub_api";
+let API_PROTOCOL = "http";
 
-// const SOCKET_ADDRESS = "35.247.129.108";
-// const SOCKET_PROTOCOL = "http";
-// const SOCKET_PORT = 5000;
+let SOCKET_ADDRESS = "localhost";
+let SOCKET_PROTOCOL = "http";
+let SOCKET_PORT = 5000;
 
-const SERVER_ADDRESS = "localhost";
-const PROTOCOL = "http";
-const PORT = process.env.NODE_ENV === "production" ? 80 : 3000;
+if (process.env.NODE_ENV === "development") {
+  SERVER_ADDRESS = "localhost";
+  PROTOCOL = "http";
 
-const API_ADDRESS = "localhost/foodhub_api";
-const API_PROTOCOL = "http";
+  API_ADDRESS = "localhost/foodhub_api";
+  API_PROTOCOL = "http";
 
-const SOCKET_ADDRESS = "localhost";
-const SOCKET_PROTOCOL = "http";
-const SOCKET_PORT = 5000;
+  SOCKET_ADDRESS = "localhost";
+  SOCKET_PROTOCOL = "http";
+  SOCKET_PORT = 5000;
+} else {
+  SERVER_ADDRESS = "35.247.129.108/foodhub_app";
+  PROTOCOL = "http";
+
+  API_ADDRESS = "35.247.129.108/foodhub_api";
+  API_PROTOCOL = "http";
+
+  SOCKET_ADDRESS = "35.247.129.108";
+  SOCKET_PROTOCOL = "http";
+  SOCKET_PORT = 5000;
+}
 
 export {
   SERVER_ADDRESS,
@@ -28,5 +38,4 @@ export {
   SOCKET_ADDRESS,
   SOCKET_PROTOCOL,
   SOCKET_PORT,
-  PORT,
 };
