@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import io from "socket.io-client";
-import { SERVER_ADDRESS, PROTOCOL } from "./config";
+import { SOCKET_ADDRESS as SOCKET_ADDRESSES, SOCKET_PROTOCOL, SOCKET_PORT } from "./config";
 
-const SOCKET_ADDRESS = `${PROTOCOL}://${SERVER_ADDRESS}:5000`;
+// process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+const SOCKET_ADDRESS = `${SOCKET_PROTOCOL}://${SOCKET_ADDRESSES}:${SOCKET_PORT}`;
 
 function createSocket(currentUser) {
   let socket;

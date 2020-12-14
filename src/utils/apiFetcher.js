@@ -1,13 +1,11 @@
 import { useAsync } from "react-async";
 import { useHistory } from "react-router-dom";
-import { SERVER_ADDRESS, PROTOCOL } from "./config";
+import { API_ADDRESS, API_PROTOCOL } from "./config";
 
-const SERVER = `${PROTOCOL}://${SERVER_ADDRESS}`;
+const API = `${API_PROTOCOL}://${API_ADDRESS}`;
 
 function apiFetcher({ url, option, restaurant }) {
-  const API = `${SERVER}/~littleboycoding/foodhub_api`;
   // const mode = window.localStorage.getItem("jwt") ? "worker" : "manager";
-
   let opt = { ...option };
   if (window.localStorage.getItem("jwt") && !restaurant) {
     if (!opt.headers) opt.headers = {};
