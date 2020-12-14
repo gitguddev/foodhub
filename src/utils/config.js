@@ -12,7 +12,7 @@ if (process.env.NODE_ENV === "development") {
   SERVER_ADDRESS = "localhost";
   PROTOCOL = "http";
 
-  API_ADDRESS = "localhost/foodhub_api";
+  API_ADDRESS = "localhost/~littleboycoding/foodhub_api";
   API_PROTOCOL = "http";
 
   SOCKET_ADDRESS = "localhost";

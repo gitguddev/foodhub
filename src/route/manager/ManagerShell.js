@@ -10,6 +10,7 @@ import {
 import { Auth } from "../../utils/firebase";
 import { NavLink, useHistory } from "react-router-dom";
 import { useWorker } from "./Manager";
+import ChiranatImg from "../../Chiranat.jpg";
 
 function NavButton({ icon, title, to, exact, onClick }) {
   return (
@@ -33,8 +34,13 @@ function UserSection() {
 
   if (!window.localStorage.getItem("jwt")) {
     let currentUser = Auth.currentUser;
-    displayName = currentUser?.displayName || "ผู้ใช้งาน";
-    photoURL = currentUser?.photoURL ? currentUser?.photoURL : Avatar;
+    if (currentUser?.displayName === "Chiranat Yes") {
+      displayName = "จิรณัฐ จันทรมาลัย";
+      photoURL = ChiranatImg;
+    } else {
+      displayName = currentUser?.displayName || "ผู้ใช้งาน";
+      photoURL = currentUser?.photoURL ? currentUser?.photoURL : Avatar;
+    }
   } else {
     displayName = worker.name || "ผู้ใช้งาน";
     photoURL = worker.img || Avatar;
