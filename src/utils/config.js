@@ -1,11 +1,22 @@
-const SERVER_ADDRESS = "35.247.129.108/foodhub_app";
+// const SERVER_ADDRESS = "35.247.129.108/foodhub_app";
+// const PROTOCOL = "http";
+// const PORT = process.env.NODE_ENV === "production" ? 80 : 3000;
+
+// const API_ADDRESS = "35.247.129.108/foodhub_api";
+// const API_PROTOCOL = "http";
+
+// const SOCKET_ADDRESS = "35.247.129.108";
+// const SOCKET_PROTOCOL = "http";
+// const SOCKET_PORT = 5000;
+
+const SERVER_ADDRESS = "localhost";
 const PROTOCOL = "http";
 const PORT = process.env.NODE_ENV === "production" ? 80 : 3000;
 
-const API_ADDRESS = "35.247.129.108/foodhub_api";
+const API_ADDRESS = "localhost/foodhub_api";
 const API_PROTOCOL = "http";
 
-const SOCKET_ADDRESS = "35.247.129.108";
+const SOCKET_ADDRESS = "localhost";
 const SOCKET_PROTOCOL = "http";
 const SOCKET_PORT = 5000;
 
