@@ -101,6 +101,15 @@ const LandingImg = styled.img`
   width: 100%;
 `;
 
+const SmallText = styled.span`
+  font-size: 0.5em;
+  color: red;
+  position: absolute;
+  left: 50%;
+  white-space: nowrap;
+  transform: translate(-50%);
+`;
+
 function Container() {
   const videoRef = useRef();
   const [scanner, scannerSet] = useState();
@@ -151,9 +160,13 @@ function Container() {
         {/*   {/1* <FontAwesomeIcon icon={faQrcode} /> สแกนเพื่อเริ่มสั่งเลย *1/} */}
         {/*   เริ่มใช้งานเลย */}
         {/* </span> */}
-        <Button onClick={StartScan} color={["#232323", "#555555"]}>
-          <FontAwesomeIcon icon={faQrcode} /> สแกนเพื่อสั่ง
-        </Button>
+        <div style={{ position: "relative" }}>
+          <Button onClick={StartScan} color={["#555555", "#555555"]} disabled>
+            <FontAwesomeIcon icon={faQrcode} /> สแกนเพื่อสั่ง
+          </Button>
+          <br />
+          <SmallText>ปิดการใช้งานชั่วคราว</SmallText>
+        </div>
         <span style={{ color: "#555555", fontSize: "0.8em" }}>
           {" "}
           | เริ่มใช้งานเลย |{" "}
@@ -169,7 +182,7 @@ function Container() {
           Made with <FontAwesomeIcon icon={faHeart} style={{ color: "red" }} />{" "}
           by
         </span>{" "}
-        <a target="_blank" href="https://gitguddev.github.io/website">
+        <a target="_blank" href="https://github.com/gitguddev">
           GitGud Dev
         </a>
       </About>
