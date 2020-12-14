@@ -27,6 +27,8 @@ import { createSocket } from "../../utils/socket.io";
 
 import { authedFetcher } from "../../utils/apiFetcher";
 
+import { PROTOCOL, SERVER_ADDRESS } from "../../utils/config";
+
 const socket = createSocket(false);
 const Socket = createContext();
 
@@ -90,7 +92,7 @@ function Restaurant() {
       if (json?.message === "session ended") {
         alert("ถูกยกเลิกโดยทางร้านอาหาร");
         window.localStorage.removeItem("auth");
-        window.location.href = "/";
+        window.location.href = PROTOCOL + "://" + SERVER_ADDRESS;
       }
 
       if (json?.message === "success" && parseInt(json.result.confirm) === 1)
